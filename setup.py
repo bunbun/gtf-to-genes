@@ -22,7 +22,7 @@ else:
 from setuptools import setup, find_packages
 setup(
         name='gtf_to_genes',
-        version=ruffus.gtf_to_genes.__version, #major.minor[.patch[.sub]]
+        version=gtf_to_genes.gtf_to_genes_version.__version, #major.minor[.patch[.sub]]
         description='Fast GTF parser',
         long_description=\
 """     
@@ -51,10 +51,26 @@ Overview
 ***************************************
 A Simple example
 ***************************************
+    ::
+        gene_structures = t_parse_gtf("Mus musculus")
 
-********
-Usage
-********
+        #
+        #   used cached data for speed
+        #    
+        ignore_cache = False
+    
+        # 
+        #   get all protein coding genes only
+        # 
+        genes_by_type = gene_structures.get_genes(gtf_file, logger, ["protein_coding"], ignore_cache = ignore_cache)
+    
+        #
+        #   print out gene counts
+        #
+        t_parse_gtf.log_gene_types (logger, genes_by_type)
+    
+        return genes_by_type        
+
 
 """,
         author='Leo Goodstadt',

@@ -2124,4 +2124,3 @@
 11	protein_coding	exon	799184	799565	.	-	.	 gene_id "ENSG00000177595"; transcript_id "ENST00000347755"; exon_number "16"; gene_name "LRDD"; transcript_name "LRDD-001";
 11	protein_coding	CDS	799310	799565	.	-	1	 gene_id "ENSG00000177595"; transcript_id "ENST00000347755"; exon_number "16"; gene_name "LRDD"; transcript_name "LRDD-001"; protein_id "ENSP00000337797";
 11	protein_coding	stop_codon	799307	799309	.	-	0	 gene_id "ENSG00000177595"; transcript_id "ENST00000347755"; exon_number "16"; gene_name "LRDD"; transcript_name "LRDD-001";
-

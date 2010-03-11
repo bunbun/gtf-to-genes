@@ -45,6 +45,7 @@ from itertools import izip
 from array import array
 import struct
 import gzip
+import cStringIO
 do_dump = marshal.dump
 do_load = marshal.load
 
@@ -959,25 +960,48 @@ class t_stream_logger:
         
 def run_function ():
     def iter (gtf_file, species, ignore_cache):
-        logger = t_stderr_logger()
+        
+        ignore_strm = cStringIO.StringIO()
+        output_strm = cStringIO.StringIO()
+        ignore_logger = t_stream_logger(ignore_strm)
+        logger = t_stream_logger(output_strm)
         gene_structures = t_parse_gtf(species)
-        genes_by_type = gene_structures.get_genes(gtf_file, logger, ["protein_coding"], ignore_cache = ignore_cache)
+        genes_by_type = gene_structures.get_genes(gtf_file, ignore_logger, ["protein_coding"], ignore_cache = ignore_cache)
         t_parse_gtf.log_gene_types (logger, genes_by_type)
-        return genes_by_type
+        return genes_by_type, output_strm.getvalue()
 
 
     #gtf_file = os.path.join(exe_path, "test/test_gene/homo.gtf.gz")
     #gtf_file = "/home/lg/temp/homo.gtf.gz"
     #gtf_file = "/home/lg/temp/test.shortish"
     #gtf_file = "/home/lg/temp/test.short"
-    species  = "Homo sapiens"
-    gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
+    #species  = "Homo sapiens"
+    #gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
     #species  = "Canis familiaris"
     #gtf_file = "/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/canis_familiaris/Canis_familiaris.BROADD2.56.gtf.gz"
+    species = "test"
+    exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+    gtf_file = os.path.join(exe_path, "test_data", "test.shortish")
 
     #genes1 =self.iter(gtf_file, True)
 
-    genes1 =iter(gtf_file, species, False)
+    genes1, output_str =iter(gtf_file, species, False)
+    assert (output_str == 
+    """   Protein_coding genes.
+           39 genes.
+          131 transcripts.
+          521 exons.
+          360 exon regions.
+            8 exon regions at median.
+           24 exon regions at max.
+            2 exon regions at min.
+          346 exon coding regions.
+            8 exon coding regions at median.
+           24 exon coding regions at max.
+            1 exon coding regions at min.
+         2120 exons in all transcripts.
+         1710 coding exons in all transcripts.
+""")
 
 
 class Test_gene(unittest.TestCase):
