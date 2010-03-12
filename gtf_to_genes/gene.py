@@ -684,19 +684,20 @@ class t_parse_gtf(object):
     # 
     #   get_genes
     #_____________________________________________________________________________________
-    def get_genes (self, gtf_file_path, logger, valid_gene_types = None, ignore_cache = False):
+    def get_genes (self, gtf_file_path, cached_gtf_file_path = None, logger = None, valid_gene_types = None, ignore_cache = False):
         """
         get_genes
         """
         logger.info(self.species_name)
         
-        CACHED_RESULTS = gtf_file_path + ".cache"
+        if cached_gtf_file_path == None:
+            ignore_cache = True
 
         #
         #   load from cache 
         #
         if not ignore_cache:
-            genes_by_type = self.load_genes_from_cache (CACHED_RESULTS, logger, valid_gene_types)
+            genes_by_type = self.load_genes_from_cache (cached_gtf_file_path, logger, valid_gene_types)
             if genes_by_type:
                 return genes_by_type
             
@@ -708,7 +709,8 @@ class t_parse_gtf(object):
         #
         #   save to cache 
         #
-        self.save_genes_to_cache (genes_by_type, CACHED_RESULTS, logger)
+        if cached_gtf_file_path != None:
+            self.save_genes_to_cache (genes_by_type, cached_gtf_file_path, logger)
         
         
         if valid_gene_types != None:
