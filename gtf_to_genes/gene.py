@@ -1,29 +1,21 @@
 #!/usr/bin/env python
-"""
-
-    gene.py
-    [--log_file PATH]
-    [--verbose]
-
-"""
-
 ################################################################################
 #
 #   gene
 #
 #
 #   Copyright (c) 3/1/2010 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +24,7 @@
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
 #################################################################################
-FILE_VERSION_MAJ = 3
+FILE_VERSION_MAJ = 4
 FILE_VERSION_MIN = 1234
 
 import sys, os
@@ -40,14 +32,15 @@ from collections import defaultdict
 import minimal_gtf_iterator
 import time
 from dump_object import dump_object
-import marshal, json
 from itertools import izip
 from array import array
 import struct
 import gzip
-import cStringIO
+import marshal
 do_dump = marshal.dump
 do_load = marshal.load
+
+from random_access_file_by_sections import fill_directory_of_sections, write_directory_of_sections, read_directory_of_sections
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -57,7 +50,7 @@ do_load = marshal.load
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #_____________________________________________________________________________________
-# 
+#
 #   median
 #_____________________________________________________________________________________
 def median (l):
@@ -68,7 +61,7 @@ def median (l):
 
 
 #_____________________________________________________________________________________
-# 
+#
 #   non_str_sequence
 #_____________________________________________________________________________________
 def non_str_sequence (arg):
@@ -86,7 +79,7 @@ def non_str_sequence (arg):
         return False
 
 #_____________________________________________________________________________________
-# 
+#
 #   overlapping_combined
 #_____________________________________________________________________________________
 def overlapping_combined( orig_data, reverse = False):
@@ -98,31 +91,31 @@ def overlapping_combined( orig_data, reverse = False):
     if not orig_data or not len(orig_data): return []
     if len(orig_data) == 1:
         return orig_data
-    
+
     new_data = []
-    
+
     if reverse:
         data = orig_data[:]
         data.reverse()
     else:
         data = orig_data
-        
+
     if not data[0][0] <= data[1][0]:
         print data, reverse
     assert(data[0][0] <= data[1][0])
-    
+
     # start with the first interval
     prev_beg, prev_end = data[0]
-    
+
     # check if any subsequent intervals overlap
     for beg, end in data[1:]:
         if beg - prev_end + 1 > 0:
             new_data.append((prev_beg, prev_end))
             prev_beg = beg
         prev_end = max(end, prev_end)
-    
+
     new_data.append((prev_beg, prev_end))
-    
+
     if reverse:
         new_data.reverse()
     return new_data
@@ -132,11 +125,11 @@ def overlapping_combined( orig_data, reverse = False):
 #   t_gene
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
 class t_gene(object):
+    """
+    """
     #_____________________________________________________________________________________
-    # 
+    #
     #   __init__
     #_____________________________________________________________________________________
     def __init__(self, gene_id, contig, strand, gene_type, names, exons, coding_exons):
@@ -144,17 +137,17 @@ class t_gene(object):
         self.contig       = contig
         self.strand       = strand
         self.gene_type    = gene_type
-        self.names        = names     
-        self.exons        = exons     
-        self.coding_exons = coding_exons     
+        self.names        = names
+        self.exons        = exons
+        self.coding_exons = coding_exons
         self.beg          = min(e[0] for e in self.exons)
         self.end          = max(e[1] for e in self.exons)
         self.transcripts  = {}
-        
+
         self.exons        = sorted(self.exons       , reverse = not self.strand)
         self.coding_exons = sorted(self.coding_exons, reverse = not self.strand)
-        
-    __slots__ = [        
+
+    __slots__ = [
                          "gene_id",
                          "contig",
                          "strand",
@@ -171,7 +164,7 @@ class t_gene(object):
             return cmp(self, other) == 0
         else:
             return False
-            
+
     def __cmp__(self, other):
         if type(other) != t_gene:
             return -1
@@ -186,49 +179,49 @@ class t_gene(object):
                 cmp(self.exons        , other.exons       ) or
                 cmp(self.coding_exons , other.coding_exons) or
                 cmp(self.transcripts  , other.transcripts ))
-        
-        
-        
+
+
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   add_transcript
     #_____________________________________________________________________________________
     def add_transcript (self, cdna_id, transcript):
         self.transcripts[cdna_id] = transcript
-        
-        
+
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   __repr__
     #_____________________________________________________________________________________
     def __repr__ (self):
         return "    " + dump_object(self)
-        
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   dump
     #_____________________________________________________________________________________
-    def dump(self, dump_file):
+    def dump(self, data_file):
         """
         dump
         """
-        do_dump(self.gene_id     , dump_file)
-        do_dump(self.contig      , dump_file)
-        do_dump(self.strand      , dump_file)
-        do_dump(self.gene_type   , dump_file)
-        do_dump(self.names       , dump_file)
-        do_dump(self.exons       , dump_file)
-        do_dump(self.coding_exons, dump_file)
-        do_dump(len(self.transcripts), dump_file)
+        do_dump(self.gene_id     , data_file)
+        do_dump(self.contig      , data_file)
+        do_dump(self.strand      , data_file)
+        do_dump(self.gene_type   , data_file)
+        do_dump(self.names       , data_file)
+        do_dump(self.exons       , data_file)
+        do_dump(self.coding_exons, data_file)
+        do_dump(len(self.transcripts), data_file)
         for cdna_id, transcript in self.transcripts.iteritems():
-            do_dump(cdna_id, dump_file)
-            transcript.dump(dump_file)
-        
+            do_dump(cdna_id, data_file)
+            transcript.dump(data_file)
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   load
     #_____________________________________________________________________________________
-    @staticmethod        
+    @staticmethod
     def load(data_file):
         """
         load
@@ -240,7 +233,7 @@ class t_gene(object):
         names        = do_load(data_file)
         exons        = do_load(data_file)
         coding_exons = do_load(data_file)
-        
+
         gene = t_gene(gene_id, contig, strand, gene_type, names, exons, coding_exons)
         cnt_transcripts = do_load(data_file)
         for i in range(cnt_transcripts):
@@ -249,8 +242,8 @@ class t_gene(object):
             gene.add_transcript(cdna_id,  transcript)
         return gene
 
-        
-        
+
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   t_transcript
@@ -259,35 +252,35 @@ class t_gene(object):
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 class t_transcript(object):
     #_____________________________________________________________________________________
-    # 
+    #
     #   __init__
     #_____________________________________________________________________________________
     def __init__(self, gene, cdna_id, names, prot_ids, exon_indices, coding_exon_indices,
-                    coding_frames, start_codons, stop_codons, 
+                    coding_frames, start_codons, stop_codons,
                     beg = None, end = None, coding_beg = None, coding_end = None):
         """
         Initialise
         """
         self.gene                   = gene
-        self.cdna_id                = cdna_id      
-        self.names                  = names               
-        self.prot_ids               = prot_ids            
-        self.exon_indices           = exon_indices               
-        self.coding_exon_indices    = coding_exon_indices 
-        self.coding_frames          = coding_frames       
-        self.start_codons           = start_codons        
-        self.stop_codons            = stop_codons         
+        self.cdna_id                = cdna_id
+        self.names                  = names
+        self.prot_ids               = prot_ids
+        self.exon_indices           = exon_indices
+        self.coding_exon_indices    = coding_exon_indices
+        self.coding_frames          = coding_frames
+        self.start_codons           = start_codons
+        self.stop_codons            = stop_codons
         self.beg                    = min(self.gene.exons[e][0] for e in self.exon_indices) if beg == None else beg
         self.end                    = max(self.gene.exons[e][1] for e in self.exon_indices) if beg == None else beg
         if coding_beg != None:
-            self.coding_beg = coding_beg 
+            self.coding_beg = coding_beg
         else:
-            self.coding_beg      = min(self.gene.coding_exons[e][0] for e in self.coding_exon_indices) if len(self.coding_exon_indices) else None 
+            self.coding_beg      = min(self.gene.coding_exons[e][0] for e in self.coding_exon_indices) if len(self.coding_exon_indices) else None
         if coding_end != None:
-            self.coding_end = coding_end 
+            self.coding_end = coding_end
         else:
             self.coding_end      = max(self.gene.coding_exons[e][1] for e in self.coding_exon_indices) if len(self.coding_exon_indices) else None
-    __slots__ = [        
+    __slots__ = [
                          "gene",
                          "cdna_id",
                          "names",
@@ -308,7 +301,7 @@ class t_transcript(object):
            return cmp(self, other) == 0
        else:
            return False
-    
+
     def __cmp__(self, other):
        if type(other) != t_transcript:
            return -1
@@ -327,31 +320,31 @@ class t_transcript(object):
                cmp(self.coding_end          , other.coding_end         )
                )
     #_____________________________________________________________________________________
-    # 
+    #
     #   dump
     #_____________________________________________________________________________________
-    def dump(self, dump_file):
+    def dump(self, data_file):
         """
         dump
         """
-        do_dump(self.cdna_id                 , dump_file)
-        do_dump(self.names                   , dump_file)
-        do_dump(self.prot_ids                , dump_file)
-        do_dump(self.exon_indices            , dump_file)
-        do_dump(self.coding_exon_indices     , dump_file)
-        do_dump(self.coding_frames           , dump_file)
-        do_dump(self.start_codons            , dump_file)
-        do_dump(self.stop_codons             , dump_file)
-        do_dump(self.beg                     , dump_file)
-        do_dump(self.end                     , dump_file)
-        do_dump(self.coding_beg              , dump_file)
-        do_dump(self.coding_end              , dump_file)
+        do_dump(self.cdna_id                 , data_file)
+        do_dump(self.names                   , data_file)
+        do_dump(self.prot_ids                , data_file)
+        do_dump(self.exon_indices            , data_file)
+        do_dump(self.coding_exon_indices     , data_file)
+        do_dump(self.coding_frames           , data_file)
+        do_dump(self.start_codons            , data_file)
+        do_dump(self.stop_codons             , data_file)
+        do_dump(self.beg                     , data_file)
+        do_dump(self.end                     , data_file)
+        do_dump(self.coding_beg              , data_file)
+        do_dump(self.coding_end              , data_file)
 
     #_____________________________________________________________________________________
-    # 
+    #
     #   load
     #_____________________________________________________________________________________
-    @staticmethod        
+    @staticmethod
     def load(gene, data_file):
         """
         load
@@ -369,7 +362,7 @@ class t_transcript(object):
         coding_beg              = do_load(data_file)
         coding_end              = do_load(data_file)
 
-        transcript = t_transcript(gene               , 
+        transcript = t_transcript(gene               ,
                                   cdna_id            ,
                                   names              ,
                                   prot_ids           ,
@@ -383,11 +376,11 @@ class t_transcript(object):
                                   coding_beg         ,
                                   coding_end         )
         return transcript
-            
-                        
-            
+
+
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   __repr__
     #_____________________________________________________________________________________
     def __repr__ (self):
@@ -396,13 +389,11 @@ class t_transcript(object):
         self_str = dump_object(self, "\n    ")
         self.gene = saved_gene
         return "\n        " + self_str
-        
-        
-from collections import  defaultdict
+
 
 class t_parse_gtf(object):
     #_____________________________________________________________________________________
-    # 
+    #
     #   construct_gene_list_from_parsed_data
     #_____________________________________________________________________________________
     def construct_gene_list_from_parsed_data (self, logger):
@@ -412,10 +403,10 @@ class t_parse_gtf(object):
         genes_by_type = defaultdict(list)
         for unique_gene_id in self.gene_id_to_contig_strands:
             gene_id, contig, strand = unique_gene_id
-            
+
             #
             #   construct gene
-            # 
+            #
             gene_names          = list(self.gene_id_to_names[unique_gene_id])
             gene_type           = self.gene_id_to_gene_type[unique_gene_id]
 
@@ -429,20 +420,20 @@ class t_parse_gtf(object):
 
             gene_exons        = sorted(gene_exons, reverse = not strand)
             gene_coding_exons = sorted(gene_coding_exons, reverse = not strand)
-            new_gene =t_gene(gene_id, contig, strand, gene_type, 
+            new_gene =t_gene(gene_id, contig, strand, gene_type,
                              gene_names, gene_exons, gene_coding_exons)
 
-            # 
+            #
             # turn gene_exons into dictionary of indices
             #
             gene_exons        = dict(izip(gene_exons,        xrange(1000000)))
             gene_coding_exons = dict(izip(gene_coding_exons, xrange(1000000)))
-                
-            
+
+
             genes_by_type[gene_type].append(new_gene)
             #
             #   construct transcripts
-            # 
+            #
             for cdna_id in self.gene_id_to_cdna_ids[unique_gene_id]:
                 names                =  self.cdna_id_to_names[cdna_id]
                 prot_ids             =  self.cdna_id_to_prot_ids[cdna_id]
@@ -451,15 +442,15 @@ class t_parse_gtf(object):
                 exon_indices         =  array('H', [gene_exons[e] for e in exons])
                 coding_exon_indices  =  array('H', [gene_coding_exons[e] for e in coding_exons])
                 coding_frames =  array('H', [int(frame) for i, frame in sorted(self.cdna_id_to_coding_frames[cdna_id])])
-                start_codons  =  tuple(self.cdna_id_to_start_codons[cdna_id])
-                stop_codons   =  tuple(self.cdna_id_to_stop_codons[cdna_id])
+                start_codons  =  tuple([interval for i, interval in sorted(self.cdna_id_to_start_codons[cdna_id])])
+                stop_codons   =  tuple([interval for i, interval in sorted(self.cdna_id_to_stop_codons[cdna_id])])
 
-                # check exon numbers correct                
+                # check exon numbers correct
                 if len(coding_frames) != len(coding_exons):
                     raise Exception("Not all CDS Exons have frames for %s/%s" %
                                      (gene_id, cdna_id))
 
-                transcript = t_transcript(  new_gene, 
+                transcript = t_transcript(  new_gene,
                                             cdna_id,
                                             list(names),
                                             list(prot_ids),
@@ -473,18 +464,18 @@ class t_parse_gtf(object):
         return genes_by_type
 
     #_____________________________________________________________________________________
-    # 
+    #
     #   log_gene_types
     #_____________________________________________________________________________________
-    @staticmethod        
+    @staticmethod
     def log_gene_types (logger, genes_by_type):
         """
         Log the different sorts of genes
         """
-        # 
+        #
         # Count the different types of genes
-        # 
-        
+        #
+
         gene_counts_by_types                   = dict()
         transcript_counts_by_types             = defaultdict(int)
         exon_counts_by_types                   = defaultdict(int)
@@ -492,7 +483,7 @@ class t_parse_gtf(object):
         transcript_coding_exon_counts_by_types = defaultdict(int)
         all_merged_exon_counts_by_types        = defaultdict(list)
         all_merged_coding_exon_counts_by_types = defaultdict(list)
-                                             
+
         try:
             for gene_type, genes in genes_by_type.iteritems():
                 gene_counts_by_types[gene_type] =len(genes)
@@ -503,19 +494,19 @@ class t_parse_gtf(object):
                     all_merged_coding_exon_counts_by_types[gene_type].append(len(overlapping_combined(g.coding_exons, not g.strand)))
                     for t in g.transcripts.values():
                         transcript_exon_counts_by_types[gene_type] += len(t.exon_indices)
-                        transcript_coding_exon_counts_by_types[gene_type] += len(t.coding_exon_indices)                    
-                        
-                        
-                        
+                        transcript_coding_exon_counts_by_types[gene_type] += len(t.coding_exon_indices)
+
+
+
         except:
             print g
             raise
-                
-            
-            
-        # 
+
+
+
+        #
         # print out protein-coding and pseudogene counts first
-        # 
+        #
         priority_types = ["protein_coding", "pseudogene", "retrotransposed"]
         for gt in priority_types:
             if gt in gene_counts_by_types:
@@ -537,83 +528,95 @@ class t_parse_gtf(object):
                     logger.info("     %8d exon coding regions at median." % (median(all_merged_coding_exon_counts_by_types[gt])))
                     logger.info("     %8d exon coding regions at max."    % (max(all_merged_coding_exon_counts_by_types[gt])))
                     logger.info("     %8d exon coding regions at min."    % (min(all_merged_coding_exon_counts_by_types[gt])))
-                
+
                 logger.info("     %8d exons in all transcripts." % (transcript_exon_counts_by_types[gt]))
                 if transcript_coding_exon_counts_by_types[gt]:
                     logger.info("     %8d coding exons in all transcripts." % (transcript_coding_exon_counts_by_types[gt]))
-                
-        # 
+
+        #
         # print out other counts
-        # 
+        #
         for gene_type, cnts in sorted(gene_counts_by_types.items()):
             if gene_type in priority_types:
                 continue
             logger.info("     %5d %-20s genes." % (cnts, gene_type))
-        
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   save_genes_to_cache
     #_____________________________________________________________________________________
     def save_genes_to_cache (self, genes_by_type, CACHED_RESULTS, logger):
         start_time = time.time()
-        dump_file = open(CACHED_RESULTS, 'wb', 5)
-        dump_file.write(struct.pack("q", FILE_VERSION_MAJ))
-        dump_file.write(struct.pack("q", FILE_VERSION_MIN))
-        
+        data_file = open(CACHED_RESULTS, 'wb', 5)
+        data_file.write(struct.pack("q", FILE_VERSION_MAJ))
+        data_file.write(struct.pack("q", FILE_VERSION_MIN))
+
         # use placeholder of the correct size to hold file positions
-        file_pos_placeholder = long(dump_file.tell())
+        file_pos_placeholder = long(data_file.tell())
 
-        gene_types_section_pos = {}
-        gene_types_directory_entry_pos = {}
-
-        gene_types = genes_by_type.keys()
-        
         #
-        #   save "directory" recording where genes of each type are in the files so we
+        #   save "directory" recording where features of each type are in the files so we
         #       can jump directly to that type
-         
-        # number of gene types
-        dump_file.write(struct.pack("q", len(gene_types)))
-        for gene_type in genes_by_type.keys():
-            # name of gene type
-            dump_file.write(struct.pack("q", len(gene_type)))
-            dump_file.write(gene_type)
-            # number of genes
-            dump_file.write(struct.pack("q", len(genes_by_type[gene_type])))
-            
-            # where the section starts: currently only placeholder
-            gene_types_directory_entry_pos[gene_type] = dump_file.tell()
-            dump_file.write(struct.pack("q", 0))
-            
-        #   DEBUGGING
-        # print >>sys.stderr, "\nStart here:", dump_file.tell()
+        section_name_directory_entry_pos = write_directory_of_sections(data_file, genes_by_type.keys())
 
         #
         #   save actual data for each gene_type in a separate section
         #
+        file_pos_by_section = {}
         for gene_type in genes_by_type.keys():
-            gene_types_section_pos[gene_type] = dump_file.tell()
-            
-            for gene in genes_by_type[gene_type]:
-                gene.dump(dump_file)
+            file_pos_by_section[gene_type] = data_file.tell()
 
-                
+            marshal.dump(len(genes_by_type[gene_type]), data_file)
+            for gene in genes_by_type[gene_type]:
+                gene.dump(data_file)
+
         #
-        #   go back and write section starts in the directory 
+        #   go back and write section starts in the directory
         #
-        for gene_type, section_file_pos in gene_types_section_pos.iteritems():
-            directory_entry_pos = gene_types_directory_entry_pos[gene_type]
-            dump_file.seek(directory_entry_pos)
-            dump_file.write(struct.pack("q", section_file_pos))
-            #   DEBUGGING
-            #print >>sys.stderr, "%20s cnt = %5d, pos = %8d, dir_entry_pos = %8d, after = %8d" % (gene_type, len(genes_by_type[gene_type]), section_file_pos, directory_entry_pos, dump_file.tell())
+        fill_directory_of_sections(data_file, section_name_directory_entry_pos, file_pos_by_section)
 
 
         end_time = time.time()
         logger.info("  Cached in %ds" % (end_time - start_time))
-        
+
     #_____________________________________________________________________________________
-    # 
+    #
+    #   cache_is_valid
+    #_____________________________________________________________________________________
+    def cache_is_valid (self, CACHED_RESULTS, logger):
+        """
+        Load genes from cache file
+        """
+        start_time = time.time()
+        try:
+            if not os.path.exists(CACHED_RESULTS):
+                return False
+
+            data_file = open(CACHED_RESULTS, 'rb')
+
+            #
+            #   check version
+            #
+            file_version1 = struct.unpack("q", data_file.read(8))[0]
+            file_version2 = struct.unpack("q", data_file.read(8))[0]
+            if file_version1 != FILE_VERSION_MAJ or file_version2 != FILE_VERSION_MIN:
+                logger.info("  Cache file wrong version = %d.%d (should be %d.%d)" %
+                            (file_version1, file_version2,
+                             FILE_VERSION_MAJ, FILE_VERSION_MIN))
+                return False
+
+            #
+            #   read directory of gene type sections
+            #
+            file_pos_by_section = read_directory_of_sections (data_file)
+
+        except:
+            return False
+
+        return True
+
+    #_____________________________________________________________________________________
+    #
     #   load_genes_from_cache
     #_____________________________________________________________________________________
     def load_genes_from_cache (self, CACHED_RESULTS, logger, valid_gene_types = None):
@@ -624,54 +627,47 @@ class t_parse_gtf(object):
         try:
             if not os.path.exists(CACHED_RESULTS):
                 return None
-                
+
             logger.debug("  Loading genes from cache")
             logger.info("  Cache file = %s" % CACHED_RESULTS)
-            cache_file = open(CACHED_RESULTS, 'rb')
-            file_version1 = struct.unpack("q", cache_file.read(8))[0]
-            file_version2 = struct.unpack("q", cache_file.read(8))[0]
+            data_file = open(CACHED_RESULTS, 'rb')
+            file_version1 = struct.unpack("q", data_file.read(8))[0]
+            file_version2 = struct.unpack("q", data_file.read(8))[0]
             if file_version1 != FILE_VERSION_MAJ or file_version2 != FILE_VERSION_MIN:
-                logger.info("  Cache file wrong version = %d.%d (should be %d.%d)" % 
-                            (file_version1, file_version2, 
+                logger.info("  Cache file wrong version = %d.%d (should be %d.%d)" %
+                            (file_version1, file_version2,
                              FILE_VERSION_MAJ, FILE_VERSION_MIN))
                 return None
-            
-            genes_by_type = defaultdict(list)
-            
-            # read directory of gene type sections
-            cnt_gene_types = struct.unpack("q", cache_file.read(8))[0]
 
-            file_pos_by_gene_type = dict()
-            for i in range(cnt_gene_types):
-                gene_type_str_len = struct.unpack("q", cache_file.read(8))[0]
-                gene_type = cache_file.read(gene_type_str_len)
-                num_genes = struct.unpack("q", cache_file.read(8))[0]
-                curr_pos  = cache_file.tell()
-                section_file_pos = struct.unpack("q", cache_file.read(8))[0]
-                file_pos_by_gene_type[gene_type] = (num_genes, section_file_pos)
-                #   DEBUGGING
-                #print >>sys.stderr, "%20s cnt = %5d, pos = %8d" % (gene_type, num_genes, section_file_pos)
-                
-            #   DEBUGGING
-            #print >>sys.stderr, "\nStart here:", cache_file.tell()
+
+            #
+            #   read directory of gene type sections
+            #
+            file_pos_by_section = read_directory_of_sections (data_file)
+
             if valid_gene_types == None:
-                valid_gene_types = file_pos_by_gene_type.keys()
-                
-                
-            for gene_type in valid_gene_types:
-                if gene_type not in file_pos_by_gene_type:
-                    continue
-                
-                (num_genes, file_pos) = file_pos_by_gene_type[gene_type]
-                cache_file.seek(file_pos, os.SEEK_SET)
-                
-                
-                for i in range(num_genes):
-                    genes_by_type[gene_type].append(t_gene.load(cache_file))
+                valid_gene_types = file_pos_by_section.keys()
 
-                    
+
+            #
+            #   Read data for all valid gene type
+            #
+            genes_by_type = defaultdict(list)
+            for gene_type in valid_gene_types:
+                if gene_type not in file_pos_by_section:
+                    continue
+
+                data_file.seek(file_pos_by_section[gene_type], os.SEEK_SET)
+
+                num_genes = marshal.load(data_file)
+                for i in range(num_genes):
+                    genes_by_type[gene_type].append(t_gene.load(data_file))
+
+            #
+            #   Save a log of the different gene types
+            #
             self.log_gene_types (logger, genes_by_type)
-                
+
             end_time = time.time()
             cnt_genes = sum(len(genes) for genes in genes_by_type.values())
             logger.info("  Loaded %d genes in %ds" % (cnt_genes,  end_time - start_time))
@@ -679,9 +675,46 @@ class t_parse_gtf(object):
         except:
             raise
             return None
-        
+
     #_____________________________________________________________________________________
-    # 
+    #
+    #   get_genes
+    #_____________________________________________________________________________________
+    def index_genes (self, gtf_file_path, cached_gtf_file_path = None, logger = None, ignore_cache = False):
+        """
+        get_genes
+        """
+        logger.info(self.species_name)
+
+        if cached_gtf_file_path == None:
+            ignore_cache = True
+
+        #
+        #   load from cache
+        #
+        if not ignore_cache:
+            if self.cache_is_valid(cached_gtf_file_path, logger):
+                return
+            else:
+                logger.debug("%s is not a valid cache file. %s will be reparsed" %
+                             (os.path.basename(cached_gtf_file_path),
+                                os.path.basename(gtf_file_path)))
+
+        #
+        #   construct from file
+        #
+        genes_by_type = self.construct_gene_list_from_file (gtf_file_path, logger)
+
+        #
+        #   save to cache
+        #
+        if cached_gtf_file_path != None:
+            self.save_genes_to_cache (genes_by_type, cached_gtf_file_path, logger)
+
+        return
+
+    #_____________________________________________________________________________________
+    #
     #   get_genes
     #_____________________________________________________________________________________
     def get_genes (self, gtf_file_path, cached_gtf_file_path = None, logger = None, valid_gene_types = None, ignore_cache = False):
@@ -689,51 +722,51 @@ class t_parse_gtf(object):
         get_genes
         """
         logger.info(self.species_name)
-        
+
         if cached_gtf_file_path == None:
             ignore_cache = True
 
         #
-        #   load from cache 
+        #   load from cache
         #
         if not ignore_cache:
             genes_by_type = self.load_genes_from_cache (cached_gtf_file_path, logger, valid_gene_types)
             if genes_by_type:
                 return genes_by_type
-            
+
         #
-        #   construct from file 
+        #   construct from file
         #
         genes_by_type = self.construct_gene_list_from_file (gtf_file_path, logger)
-        
+
         #
-        #   save to cache 
+        #   save to cache
         #
         if cached_gtf_file_path != None:
             self.save_genes_to_cache (genes_by_type, cached_gtf_file_path, logger)
-        
-        
+
+
         if valid_gene_types != None:
             for gene_type in genes_by_type.keys():
                 if gene_type not in valid_gene_types:
                     del genes_by_type[gene_type]
-        
+
         return genes_by_type
-        
-        
+
+
 
     #_____________________________________________________________________________________
-    # 
+    #
     #   construct_gene_list_from_file
     #_____________________________________________________________________________________
     def construct_gene_list_from_file (self, gtf_file_path, logger):
         """
         construct genes from GTF file
         """
-        
+
         #
         #   parse into useful structures and check all is well
-        # 
+        #
         logger.debug("  Parsing genes data from GTF file.")
         logger.info("  GTF file = %s" % gtf_file_path)
         start_time = time.time()
@@ -744,7 +777,7 @@ class t_parse_gtf(object):
         logger.info("  Parsed in %ds" % (end_time - start_time))
         start_time = time.time()
 
-        #   
+        #
         #   build genes
         #
         logger.debug("  Creating data structures for genes.")
@@ -759,12 +792,12 @@ class t_parse_gtf(object):
 
 
 
-        
-        
-                
-        
+
+
+
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   __init__
     #_____________________________________________________________________________________
     def __init__(self, species_name):
@@ -778,7 +811,7 @@ class t_parse_gtf(object):
         #   gene_id -> beg/end/cdna_id/exon_index
         #   gene_id -> gene_name
         #           -> contig / strand
-        # 
+        #
         self.gene_id_to_contig_strands = set()
         self.gene_id_to_names          = defaultdict(set)
         self.gene_id_to_cdna_ids       = defaultdict(set)
@@ -786,7 +819,7 @@ class t_parse_gtf(object):
 
         #
         #   cdna_id
-        # 
+        #
         self.cdna_id_to_names        = defaultdict(set)
         self.cdna_id_to_prot_ids     = defaultdict(set)
         self.cdna_id_to_start_codons = defaultdict(tuple)
@@ -796,9 +829,9 @@ class t_parse_gtf(object):
         self.cdna_id_to_coding_frames= defaultdict(set)
 
 
-        
+
     #_____________________________________________________________________________________
-    # 
+    #
     #   parse
     #_____________________________________________________________________________________
     def parse (self, gtf_file_path, logger):
@@ -809,10 +842,10 @@ class t_parse_gtf(object):
             gtf_file = gzip.open(gtf_file_path)
         else:
             gtf_file = open(gtf_file_path)
-            
+
         logger.info("  Parsing %s" % gtf_file_path)
 
-        try:        
+        try:
             for line_num, gtf_entry in enumerate(minimal_gtf_iterator.iterator(gtf_file)):
                 exon_index  = int(gtf_entry.mAttributes["exon_number"]) - 1
                 cdna_id     = gtf_entry.mTranscriptId
@@ -848,18 +881,18 @@ class t_parse_gtf(object):
                 elif gtf_entry.mFeature == "CDS":
                     self.cdna_id_to_prot_ids[cdna_id].add(gtf_entry.mAttributes["protein_id"])
                     self.cdna_id_to_coding_frames[cdna_id].add((exon_index, gtf_entry.mFrame))
-                    self.cdna_id_to_coding_exons[cdna_id].add(interval)                    
+                    self.cdna_id_to_coding_exons[cdna_id].add(interval)
 
                 #
                 # start codon
-                # 
+                #
                 elif gtf_entry.mFeature == "start_codon":
-                    self.cdna_id_to_start_codons[cdna_id] += (((interval, exon_index),))
+                    self.cdna_id_to_start_codons[cdna_id] += (exon_index, interval),
                 #
                 # stop codon
-                # 
+                #
                 elif gtf_entry.mFeature == "stop_codon":
-                    self.cdna_id_to_stop_codons[cdna_id] += (((interval, exon_index),))
+                    self.cdna_id_to_stop_codons[cdna_id] += (exon_index, interval),
         except:
             print line_num, "    " + dump_object(gtf_entry)
             raise
@@ -872,7 +905,7 @@ class t_parse_gtf(object):
 
 
     #_____________________________________________________________________________________
-    # 
+    #
     #   check_number_of_names
     #_____________________________________________________________________________________
     def check_number_of_names (self, logger):
@@ -888,7 +921,7 @@ class t_parse_gtf(object):
                 logger.warning("Genes with > 1 name: %23s %s" % (gene_id, str(gene_names)))
 
     #_____________________________________________________________________________________
-    # 
+    #
     #   check_split_codons
     #_____________________________________________________________________________________
     def check_split_codons (self, logger):
@@ -907,11 +940,11 @@ class t_parse_gtf(object):
                     logger.error("Transcripts with %s codons " % description +
                                     "split over > 2 exons: "+
                                     "%23s %s" % (cdna_id, str(codons)))
-    
+
             #logger.info("%3d transcripts with %s codons split over 2 exons: " %
             #                (cnt_split_codons, description))
-            
-            
+
+
         do_count (self.cdna_id_to_start_codons, "start", logger)
         do_count (self.cdna_id_to_stop_codons, "stop", logger)
 
@@ -959,36 +992,71 @@ class t_stream_logger:
     def debug (self, message):
         self.stream.write(message + "\n")
 
-        
+
 def run_function ():
+    import cStringIO
+
     def iter (gtf_file, species, ignore_cache):
-        
+
         ignore_strm = cStringIO.StringIO()
         output_strm = cStringIO.StringIO()
         ignore_logger = t_stream_logger(ignore_strm)
         logger = t_stream_logger(output_strm)
         gene_structures = t_parse_gtf(species)
-        genes_by_type = gene_structures.get_genes(gtf_file, ignore_logger, ["protein_coding"], ignore_cache = ignore_cache)
+        genes_by_type = gene_structures.get_genes(gtf_file, gtf_file + ".cache", ignore_logger, #["protein_coding"],
+                                                                                                None, ignore_cache = ignore_cache)
         t_parse_gtf.log_gene_types (logger, genes_by_type)
         return genes_by_type, output_strm.getvalue()
 
 
-    #gtf_file = os.path.join(exe_path, "test/test_gene/homo.gtf.gz")
-    #gtf_file = "/home/lg/temp/homo.gtf.gz"
-    #gtf_file = "/home/lg/temp/test.shortish"
-    #gtf_file = "/home/lg/temp/test.short"
-    #species  = "Homo sapiens"
-    #gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
-    #species  = "Canis familiaris"
-    #gtf_file = "/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/canis_familiaris/Canis_familiaris.BROADD2.56.gtf.gz"
+    #
+    # Use test data file
+    #
     species = "test"
     exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
     gtf_file = os.path.join(exe_path, "test_data", "test.shortish")
 
-    #genes1 =self.iter(gtf_file, True)
+    #
+    # Uncomment Use data files from ensembl
+    #
+
+    species  = "Homo sapiens"
+    gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
+    #species  = "Canis familiaris"
+    #gtf_file = "/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/canis_familiaris/Canis_familiaris.BROADD2.56.gtf.gz"
+
+    #
+    # determine heap size / memory usage
+    #
+    h = None
+    try:
+        #from guppy import hpy;
+        #h=hpy()
+        #h.setrelheap()
+        pass
+    except:
+        pass
 
     genes1, output_str =iter(gtf_file, species, False)
-    assert (output_str == 
+    if h != None:
+        heap_size = h.heap().size
+        if heap_size > 1024:
+            if heap_size > (1024 * 1024):
+                heap_size_str = "%.1f MB" % (heap_size / 1024 / 1024)
+            else:
+                heap_size_str = "%.1f kB" % (heap_size / 1024)
+        else:
+            heap_size_str = "%d Bytes" % (heap_size)
+        print ("\n\n" + "*" * 80 + "\n\n"   +
+               "    Total memory needed for %s genes = %s\n\n" % (species, heap_size_str)  +
+               "*" * 80 + "\n\n")
+
+        #
+        #   print heap details
+        #
+        #   print h.heap()
+
+    correct_output_str = \
     """   Protein_coding genes.
            39 genes.
           131 transcripts.
@@ -1003,7 +1071,29 @@ def run_function ():
             1 exon coding regions at min.
          2120 exons in all transcripts.
          1710 coding exons in all transcripts.
-""")
+   Pseudogenes.
+            2 genes.
+            2 transcripts.
+            4 exons.
+            4 exon regions.
+            3 exon regions at median.
+            3 exon regions at max.
+            1 exon regions at min.
+            0 exon coding regions.
+            0 exon coding regions at median.
+            0 exon coding regions at max.
+            0 exon coding regions at min.
+            8 exons in all transcripts.
+         1 miRNA                genes.
+         1 misc_RNA             genes.
+         1 scRNA_pseudogene     genes.
+         1 snRNA                genes.
+         1 snRNA_pseudogene     genes.
+"""
+    if species == "test":
+        assert (output_str == correct_output_str)
+    else:
+        print output_str
 
 
 class Test_gene(unittest.TestCase):
@@ -1020,8 +1110,8 @@ class Test_gene(unittest.TestCase):
         #s.strip_dirs().sort_stats("time").print_stats()
         run_function()
 
-        
-        
+
+
 
     def print_to_file (self, file_name, genes_per_gene_type):
         output_file = open(file_name, "w")
@@ -1029,10 +1119,10 @@ class Test_gene(unittest.TestCase):
         for gene_type in gene_types:
             for g in genes_per_gene_type[gene_type]:
                 output_file.write(str(g)+"\n")
-        
+
     def iter(self, gtf_file, ignore_cache):
         """
-            test 
+            test
         """
         logger = t_stderr_logger()
         gene_structures = t_parse_gtf("Mus musculus")
@@ -1042,10 +1132,10 @@ class Test_gene(unittest.TestCase):
 
 
 
-            
+
 #
 #   debug code not run if called as a module
-#     
+#
 if __name__ == '__main__':
     if sys.argv.count("--debug"):
         sys.argv.remove("--debug")
@@ -1053,4 +1143,4 @@ if __name__ == '__main__':
 
 
 
-    
+

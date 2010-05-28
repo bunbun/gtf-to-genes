@@ -73,9 +73,9 @@ if "%1" == "qthelp" (
 	echo.
 	echo.Build finished; now you can run "qcollectiongenerator" with the ^
 .qhcp project file in build/qthelp, like this:
-	echo.^> qcollectiongenerator build\qthelp\gtf_to_gene.qhcp
+	echo.^> qcollectiongenerator build\qthelp\gtf_to_genes.qhcp
 	echo.To view the help file:
-	echo.^> assistant -collectionFile build\qthelp\gtf_to_gene.ghc
+	echo.^> assistant -collectionFile build\qthelp\gtf_to_genes.ghc
 	goto end
 )
 

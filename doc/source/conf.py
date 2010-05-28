@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# gtf_to_gene documentation build configuration file, created by
-# sphinx-quickstart on Thu Mar 11 13:12:29 2010.
+# gtf_to_genes documentation build configuration file, created by
+# sphinx-quickstart on Wed May 26 15:13:21 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -12,6 +12,9 @@
 # serve to show the default.
 
 import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
+print sys.path
+import gtf_to_genes
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,10 +25,10 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.ifconfig']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['ytemplates']
+templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -37,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'gtf_to_gene'
+project = u'gtf_to_genes'
 copyright = u'2010, Leo Goodstadt'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -89,6 +92,12 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
+# The style sheet to use for HTML and HTML Help pages. A file of that name
+# must exist either in Sphinx' static/ path, or in one of the custom paths
+# given in html_static_path.
+html_style = 'ruffus.css'
+
+
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
 html_theme = 'default'
@@ -120,7 +129,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['ystatic']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -158,7 +167,7 @@ html_static_path = ['ystatic']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'gtf_to_genedoc'
+htmlhelp_basename = 'gtf_to_genesdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -172,7 +181,7 @@ htmlhelp_basename = 'gtf_to_genedoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'gtf_to_gene.tex', ur'gtf\_to\_gene Documentation',
+  ('index', 'gtf_to_genes.tex', ur'gtf\_to\_genes Documentation',
    ur'Leo Goodstadt', 'manual'),
 ]
 

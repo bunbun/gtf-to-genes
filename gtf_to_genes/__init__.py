@@ -25,6 +25,11 @@
 #   THE SOFTWARE.
 #################################################################################
 from gene import t_parse_gtf, t_gene, t_transcript
+from index_gtf_files import (
+            index_gtf_files, 
+            get_indexed_genes_for_identifier, 
+            get_indexed_genes_matching_gtf_file_name, 
+            get_indexed_genes_matching_identifier)
 import gtf_to_genes_version
 __version__=gtf_to_genes_version.__version
 

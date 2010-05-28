@@ -32,7 +32,8 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
 	@echo
-	@echo "Build finished. The HTML pages are in build/html."
+	rsync -t --recursive build/html/* /home/lg/remotehomelg/public_html/oss/gtf_to_genes
+	@echo "Build finished. The HTML pages are in _build/html."
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) build/dirhtml
@@ -60,9 +61,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in build/qthelp, like this:"
-	@echo "# qcollectiongenerator build/qthelp/gtf_to_gene.qhcp"
+	@echo "# qcollectiongenerator build/qthelp/gtf_to_genes.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile build/qthelp/gtf_to_gene.qhc"
+	@echo "# assistant -collectionFile build/qthelp/gtf_to_genes.qhc"
 
 latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
