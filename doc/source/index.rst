@@ -155,15 +155,38 @@ Quick start
     Only the middle exon is actually alternatively spliced.
 
 
+=========================================================
+    Coordinates
+=========================================================
+    Following the standard python convention, and for ease of coordinate
+    arithmetic, all coordinates are "zero-based, half-open".
+
+    In other words, the first base in a contig or chromosome is base ``0``.
+    If a sequence is 10 bases long, it may have the following loci:
+
+        ::
+
+            {
+                'beg'           : 10,
+                'end'           : 20,
+            }
+
+    The length is ``end - beg`` = ``20 - 10`` = ``10``
+
+    N.B. the position of the last base in the sequence is base ``19`` (not ``20``).
+    The ``end`` position is always one past the end of the sequence.
+
+    This is the standard python convention, for example, in list slicing (``a_list[beg:end]``)
+
 #########################################################
-Classes for genes / transcripts
+Classes for genes and transcripts
 #########################################################
 
 Gene and transcript data are stored in the following classes.
 (All co-ordinates use 0-based [) convention.)
 
 ==================================================================================================
-Genes
+t_gene
 ==================================================================================================
 .. _t_gene_class:
 
@@ -234,7 +257,7 @@ Genes
 
 
 ==================================================================================================
-Transcript
+t_transcript
 ==================================================================================================
 
 .. _t_transcript_class:
@@ -305,28 +328,6 @@ Transcript
 
         Save data for gene to open file ``dump_file``
 
-
-=========================================================
-    Coordinates
-=========================================================
-    Following the standard python convention, and for ease of coordinate
-    arithmetic, all coordinates are "zero-based, half-open".
-
-    In other words, the first base in a contig or chromosome is base ``0``.
-    If a sequence is 10 bases long, it may have the following loci:
-
-        ::
-            {
-                'beg'           : 10,
-                'end'           : 20,
-            }
-
-    The length is ``end - beg`` = ``20 - 10`` = ``10``
-
-    N.B. the position of the last base in the sequence is base ``19`` (not ``20``).
-    The ``end`` position is always one past the end of the sequence.
-
-    This is the standard python convention, for example, in list slicing (``a_list[beg:end]``)
 
 
 #########################################################
@@ -541,7 +542,7 @@ Indexing genes / transcripts by identifier
 
 
 ##################################################################################
-More examples:
+More examples
 ##################################################################################
 
 .. toctree::
@@ -561,6 +562,6 @@ Indices and tables
 * :ref:`search`
 
 
-License is MIT.
+gtf_to_genes uses an MIT license.
 
 

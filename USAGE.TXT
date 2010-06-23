@@ -1,1 +1,69 @@
+================================================
+1) Download all desired GTF files from ensembl
+================================================
+For example:
+
+	cd /net/cpp-mirror/databases/
+	wget ftp://ftp.ensembl.org/pub/release-58/gtf -r -S
+
+
+================================================
+2) Index downloaded genes
+================================================
+
+	# Index  file
+	search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org"
+	index_file       = search_path_root + "/gtf.index"
+
+	#
+	# log progress
+	#
+	import logging
+	logger = logging.getLogger("indexing_operation")
+	
+	
+	# look for GTF or gzipped GTF files
+	regex_input          = r"(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$"
+	
+	# put cache file in same directory as GTF file
+	cache_file_pattern   = r"\1\2.cache"
+	
+	#
+	# Unique identifier per GTF file
+	# e.g. "Anolis_carolinensis:56"
+	#
+	identifier_pattern   = r"\3:\4"
+	
+	
+	from gtf_to_genes import *
+	index_gtf_files(index_file,
+			search_path_root,
+			regex_input,
+			cache_file_pattern,
+			identifier_pattern,
+			logger)
+
+
+================================================
+3) Load genes from cached GTF file
+================================================
+
+	#
+	#	Homo_sapiens v.56
+	#
+	species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Homo_sapiens:56")
+
+	# print gene types
+	# ['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']
+	print "Gene types = %s" % (genes.keys(),)
+
+	# of protein coding genes =  11604
+	print "# of protein coding genes = ", len(genes['protein_coding'])
+	
+
+	# print gene 'ENSG00000053438'
+	gi = index_genes_by_gene_id(genes)
+	gene = gi['ENSG00000053438']
+	print gene
+
 
