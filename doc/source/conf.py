@@ -95,7 +95,7 @@ pygments_style = 'sphinx'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'ruffus.css'
+html_style = 'shared.css'
 
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with

@@ -142,21 +142,23 @@ class t_gene(object):
         self.coding_exons = coding_exons
         self.beg          = min(e[0] for e in self.exons)
         self.end          = max(e[1] for e in self.exons)
-        self.transcripts  = {}
+        self.transcripts  = []
 
         self.exons        = sorted(self.exons       , reverse = not self.strand)
         self.coding_exons = sorted(self.coding_exons, reverse = not self.strand)
+        self.virtual_exons= overlapping_combined(exons, reverse = not self.strand)
 
     __slots__ = [
                          "gene_id",
-                         "contig",
-                         "strand",
                          "gene_type",
+                         "contig",
+                         "beg",
+                         "end",
+                         "strand",
                          "names",
                          "exons",
                          "coding_exons",
-                         "beg",
-                         "end",
+                         "virtual_exons",
                          "transcripts",
                         ]
     def __eq__(self, other):
@@ -186,8 +188,8 @@ class t_gene(object):
     #
     #   add_transcript
     #_____________________________________________________________________________________
-    def add_transcript (self, cdna_id, transcript):
-        self.transcripts[cdna_id] = transcript
+    def add_transcript (self, transcript):
+        self.transcripts.append(transcript)
 
 
     #_____________________________________________________________________________________
@@ -195,7 +197,7 @@ class t_gene(object):
     #   __repr__
     #_____________________________________________________________________________________
     def __repr__ (self):
-        return "    " + dump_object(self)
+        return dump_object(self, sorted_attribute_names = self.__slots__)
 
     #_____________________________________________________________________________________
     #
@@ -213,8 +215,7 @@ class t_gene(object):
         do_dump(self.exons       , data_file)
         do_dump(self.coding_exons, data_file)
         do_dump(len(self.transcripts), data_file)
-        for cdna_id, transcript in self.transcripts.iteritems():
-            do_dump(cdna_id, data_file)
+        for transcript in self.transcripts:
             transcript.dump(data_file)
 
     #_____________________________________________________________________________________
@@ -235,11 +236,11 @@ class t_gene(object):
         coding_exons = do_load(data_file)
 
         gene = t_gene(gene_id, contig, strand, gene_type, names, exons, coding_exons)
+        gene.virtual_exons= overlapping_combined(exons, reverse = not gene.strand)
         cnt_transcripts = do_load(data_file)
         for i in range(cnt_transcripts):
-            cdna_id = do_load(data_file)
             transcript = t_transcript.load(gene, data_file)
-            gene.add_transcript(cdna_id,  transcript)
+            gene.add_transcript(transcript)
         return gene
 
 
@@ -251,11 +252,31 @@ class t_gene(object):
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 class t_transcript(object):
+    def get_indices_into_virtual_exons (self, exons, exon_indices):
+        """
+        Translate from coding /non-coding exons into indices of exons after overlapping
+        loci have been combined. This allows exon usage across transcripts to be compared
+        easily
+        """
+        virtual_exon_indices = []
+        for ei in exon_indices:
+            exon = exons[ei]
+            for i, ve in enumerate(self.gene.virtual_exons):
+                if exon[0] >= ve[0] and exon[1] <= ve[1]:
+                    virtual_exon_indices.append(i)
+                    break
+            else:
+                raise Exception("Exon [%d-%d] not found in parent exons (%s) of transcript %s" %
+                                    (exon[0], exon[1], self.cdna_id, self.gene.gene_id))
+        return array('H', virtual_exon_indices)
+
+
+
     #_____________________________________________________________________________________
     #
     #   __init__
     #_____________________________________________________________________________________
-    def __init__(self, gene, cdna_id, names, prot_ids, exon_indices, coding_exon_indices,
+    def __init__(self, gene, cdna_id, names, prot_id, exon_indices, coding_exon_indices,
                     coding_frames, start_codons, stop_codons,
                     beg = None, end = None, coding_beg = None, coding_end = None):
         """
@@ -264,14 +285,14 @@ class t_transcript(object):
         self.gene                   = gene
         self.cdna_id                = cdna_id
         self.names                  = names
-        self.prot_ids               = prot_ids
+        self.prot_id                = prot_id
         self.exon_indices           = exon_indices
         self.coding_exon_indices    = coding_exon_indices
         self.coding_frames          = coding_frames
         self.start_codons           = start_codons
         self.stop_codons            = stop_codons
         self.beg                    = min(self.gene.exons[e][0] for e in self.exon_indices) if beg == None else beg
-        self.end                    = max(self.gene.exons[e][1] for e in self.exon_indices) if beg == None else beg
+        self.end                    = max(self.gene.exons[e][1] for e in self.exon_indices) if end == None else end
         if coding_beg != None:
             self.coding_beg = coding_beg
         else:
@@ -280,20 +301,26 @@ class t_transcript(object):
             self.coding_end = coding_end
         else:
             self.coding_end      = max(self.gene.coding_exons[e][1] for e in self.coding_exon_indices) if len(self.coding_exon_indices) else None
+
+
+        self.virtual_exon_indices = self.get_indices_into_virtual_exons (self.gene.exons, self.exon_indices)
+        self.virtual_coding_exon_indices = self.get_indices_into_virtual_exons (self.gene.coding_exons, self.coding_exon_indices)
     __slots__ = [
                          "gene",
                          "cdna_id",
-                         "names",
-                         "prot_ids",
-                         "exon_indices",
-                         "coding_exon_indices",
-                         "coding_frames",
-                         "start_codons",
-                         "stop_codons",
+                         "prot_id",
                          "beg",
                          "end",
                          "coding_beg",
                          "coding_end",
+                         "names",
+                         "exon_indices",
+                         "coding_exon_indices",
+                         "coding_frames",
+                         "virtual_exon_indices"       ,
+                         "virtual_coding_exon_indices",
+                         "start_codons",
+                         "stop_codons",
                         ]
 
     def __eq__(self, other):
@@ -308,7 +335,7 @@ class t_transcript(object):
        return (
                cmp(self.cdna_id             , other.cdna_id            ) or
                cmp(self.names               , other.names              ) or
-               cmp(self.prot_ids            , other.prot_ids           ) or
+               cmp(self.prot_id             , other.prot_id            ) or
                cmp(self.exon_indices        , other.exon_indices       ) or
                cmp(self.coding_exon_indices , other.coding_exon_indices) or
                cmp(self.coding_frames       , other.coding_frames      ) or
@@ -329,7 +356,7 @@ class t_transcript(object):
         """
         do_dump(self.cdna_id                 , data_file)
         do_dump(self.names                   , data_file)
-        do_dump(self.prot_ids                , data_file)
+        do_dump(self.prot_id                 , data_file)
         do_dump(self.exon_indices            , data_file)
         do_dump(self.coding_exon_indices     , data_file)
         do_dump(self.coding_frames           , data_file)
@@ -351,10 +378,10 @@ class t_transcript(object):
         """
         cdna_id                 = do_load(data_file)
         names                   = do_load(data_file)
-        prot_ids                = do_load(data_file)
-        exon_indices            = do_load(data_file)
-        coding_exon_indices     = do_load(data_file)
-        coding_frames           = do_load(data_file)
+        prot_id                 = do_load(data_file)
+        exon_indices            = array('H', do_load(data_file))
+        coding_exon_indices     = array('H', do_load(data_file))
+        coding_frames           = array('H', do_load(data_file))
         start_codons            = do_load(data_file)
         stop_codons             = do_load(data_file)
         beg                     = do_load(data_file)
@@ -365,7 +392,7 @@ class t_transcript(object):
         transcript = t_transcript(gene               ,
                                   cdna_id            ,
                                   names              ,
-                                  prot_ids           ,
+                                  prot_id            ,
                                   exon_indices       ,
                                   coding_exon_indices,
                                   coding_frames      ,
@@ -375,6 +402,8 @@ class t_transcript(object):
                                   end                ,
                                   coding_beg         ,
                                   coding_end         )
+        transcript.virtual_exon_indices = transcript.get_indices_into_virtual_exons (transcript.gene.exons, transcript.exon_indices)
+        transcript.virtual_coding_exon_indices = transcript.get_indices_into_virtual_exons (transcript.gene.coding_exons, transcript.coding_exon_indices)
         return transcript
 
 
@@ -385,10 +414,10 @@ class t_transcript(object):
     #_____________________________________________________________________________________
     def __repr__ (self):
         saved_gene = self.gene
-        self.gene = self.gene.gene_id
-        self_str = dump_object(self, "\n    ")
+        self.gene = "<Reference to gene with gene_id=%s>" % self.gene.gene_id
+        self_str = dump_object(self, sorted_attribute_names = self.__slots__)
         self.gene = saved_gene
-        return "\n        " + self_str
+        return self_str
 
 
 class t_parse_gtf(object):
@@ -436,7 +465,10 @@ class t_parse_gtf(object):
             #
             for cdna_id in self.gene_id_to_cdna_ids[unique_gene_id]:
                 names                =  self.cdna_id_to_names[cdna_id]
-                prot_ids             =  self.cdna_id_to_prot_ids[cdna_id]
+                if len(names) > 1:
+                    logger.warning("Transcript %s has %d (>1) names (%s)" %
+                                     cdna_id, len(names), ", ".join(names))
+                prot_id              =  self.cdna_id_to_prot_id[cdna_id] if cdna_id in self.cdna_id_to_prot_id else None
                 exons                =  sorted(self.cdna_id_to_exons[cdna_id]       , reverse = not strand)
                 coding_exons         =  sorted(self.cdna_id_to_coding_exons[cdna_id], reverse = not strand)
                 exon_indices         =  array('H', [gene_exons[e] for e in exons])
@@ -453,13 +485,13 @@ class t_parse_gtf(object):
                 transcript = t_transcript(  new_gene,
                                             cdna_id,
                                             list(names),
-                                            list(prot_ids),
+                                            prot_id,
                                             exon_indices,
                                             coding_exon_indices,
                                             coding_frames,
                                             start_codons,
                                             stop_codons)
-                new_gene.add_transcript(cdna_id, transcript)
+                new_gene.add_transcript(transcript)
 
         return genes_by_type
 
@@ -492,7 +524,7 @@ class t_parse_gtf(object):
                     exon_counts_by_types[gene_type] += len(g.exons)
                     all_merged_exon_counts_by_types[gene_type].append(len(overlapping_combined(g.exons, not g.strand)))
                     all_merged_coding_exon_counts_by_types[gene_type].append(len(overlapping_combined(g.coding_exons, not g.strand)))
-                    for t in g.transcripts.values():
+                    for t in g.transcripts:
                         transcript_exon_counts_by_types[gene_type] += len(t.exon_indices)
                         transcript_coding_exon_counts_by_types[gene_type] += len(t.coding_exon_indices)
 
@@ -821,7 +853,7 @@ class t_parse_gtf(object):
         #   cdna_id
         #
         self.cdna_id_to_names        = defaultdict(set)
-        self.cdna_id_to_prot_ids     = defaultdict(set)
+        self.cdna_id_to_prot_id      = dict()
         self.cdna_id_to_start_codons = defaultdict(tuple)
         self.cdna_id_to_stop_codons  = defaultdict(tuple)
         self.cdna_id_to_exons        = defaultdict(set)
@@ -879,7 +911,15 @@ class t_parse_gtf(object):
                     self.cdna_id_to_exons[cdna_id].add(interval)
 
                 elif gtf_entry.mFeature == "CDS":
-                    self.cdna_id_to_prot_ids[cdna_id].add(gtf_entry.mAttributes["protein_id"])
+                    prot_id = gtf_entry.mAttributes["protein_id"]
+                    if (cdna_id in self.cdna_id_to_prot_id and
+                        self.cdna_id_to_prot_id[cdna_id] != prot_id):
+                        old_prot_id = self.cdna_id_to_prot_id[cdna_id]
+                        logger.warning("Transcript %s has two peptide IDs (%s and %s)"
+                                       % (cdna_id, old_prot_id, prot_id))
+                    self.cdna_id_to_prot_id[cdna_id] = prot_id
+                    if cdna_id == 'ENST00000493221':
+                        print prot_id
                     self.cdna_id_to_coding_frames[cdna_id].add((exon_index, gtf_entry.mFrame))
                     self.cdna_id_to_coding_exons[cdna_id].add(interval)
 

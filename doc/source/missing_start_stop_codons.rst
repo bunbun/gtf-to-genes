@@ -1,5 +1,5 @@
 ============================================================================
-Example 1 Count number of genes with no start or stop codon
+Example 1. Count number of genes with no start or stop codon
 ============================================================================
 
     Index *Homo sapiens* GTF file at ``"/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/"``

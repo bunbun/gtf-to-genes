@@ -1,4 +1,10 @@
 = v. 1.0=
     _11/March/2010_
     Initial Release in Oxford       
+   
+= v. 1.04=
+    _15/June/2010_
+    ==Bug Fix:==
+	    * Loading of transcript indices and coding_indices now correct
+
     

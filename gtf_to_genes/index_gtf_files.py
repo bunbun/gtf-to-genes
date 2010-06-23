@@ -238,6 +238,7 @@ if __name__ == '__main__':
                 options.log_file = os.path.join(index_file_path, "cache_genes_from_gtf.log")
                 if options.log_file == options.index_file:
                     options.log_file = None
+        options.search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org/"
 
     #
     #   mandatory options
@@ -284,7 +285,7 @@ def get_indexed_genes_for_identifier(index_file_name, logger, identifier):
 
     # go through in reverse order of id2 so that higher version numbers are retrieved first
     for id, original_gtf_path, gtf_cache_path in index_data:
-        if id == identifier:
+        if id == identifier or id == identifier.replace(' ', '_'):
             gene_structures = gene.t_parse_gtf(id)
             logger.info("Get indexed genes for %s from %s" % (id, original_gtf_path))
             return (id, original_gtf_path, gene_structures.get_genes(original_gtf_path, gtf_cache_path,
@@ -475,28 +476,28 @@ if __name__ == '__main__':
                         options.ignore_cache,
                         logger)
 
-    if options.debug:
-        print "\n\nGetting genes from all species matching 'Ciona'"
-        data = get_indexed_genes_matching_identifier(options.index_file,  logger,  "Ciona")
-        for id, file_name, genes in data:
-            print os.path.basename(file_name)
-            print id, genes.keys()
-            print "# of protein coding genes = ", len(genes['protein_coding'])
+    #if options.debug:
+    #    print "\n\nGetting genes from all species matching 'Ciona'"
+    #    data = get_indexed_genes_matching_identifier(options.index_file,  logger,  "Ciona")
+    #    for id, file_name, genes in data:
+    #        print os.path.basename(file_name)
+    #        print id, genes.keys()
+    #        print "# of protein coding genes = ", len(genes['protein_coding'])
+    #
+    #    print "\n\nGetting genes from 'Ciona_savignyi:56'"
+    #    id, file_name, genes = get_indexed_genes_for_identifier(options.index_file,  logger,  "Ciona_savignyi:56")
+    #
+    #    if genes:
+    #        print os.path.basename(file_name)
+    #        print id, genes.keys()
+    #        print "# of protein coding genes = ", len(genes['protein_coding'])
+    #
+    #    print "\n\nGetting genes from all files matching 'Ciona'"
+    #    data = get_indexed_genes_matching_gtf_file_name(options.index_file, logger, "Ciona")
+    #    for id, file_name, genes in data:
+    #        print os.path.basename(file_name)
+    #        print id, genes.keys()
+    #        print "# of protein coding genes = ", len(genes['protein_coding'])
 
-        print "\n\nGetting genes from 'Ciona_savignyi:56'"
-        id, file_name, genes = get_indexed_genes_for_identifier(options.index_file,  logger,  "Ciona_savignyi:56")
-
-        if genes:
-            print os.path.basename(file_name)
-            print id, genes.keys()
-            print "# of protein coding genes = ", len(genes['protein_coding'])
-
-        print "\n\nGetting genes from all files matching 'Ciona'"
-        data = get_indexed_genes_matching_gtf_file_name(options.index_file, logger, "Ciona")
-        for id, file_name, genes in data:
-            print os.path.basename(file_name)
-            print id, genes.keys()
-            print "# of protein coding genes = ", len(genes['protein_coding'])
-
-        print "\n\nDone\n"
+    print "\n\nDone\n"
 
