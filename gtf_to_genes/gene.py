@@ -245,6 +245,14 @@ class t_gene(object):
             gene.add_transcript(transcript)
         return gene
 
+    #_____________________________________________________________________________________
+    #
+    #   get_transcript_type_names
+    #_____________________________________________________________________________________
+    def get_transcript_type_names (self):
+        names = set(t.get_transcript_type_name() for t in self.transcripts)
+        return tuple(sorted(names))
+
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -434,10 +442,10 @@ class t_transcript(object):
 
     #_____________________________________________________________________________________
     #
-    #   get_transcript_type_names
+    #   get_transcript_type_name
     #_____________________________________________________________________________________
     def get_transcript_type_name (self):
-        return t_transcript.transcript_type_names[transcript_type]
+        return t_transcript.transcript_type_names[self.transcript_type]
 
 
 class t_parse_gtf(object):
@@ -542,6 +550,7 @@ class t_parse_gtf(object):
         #
 
         gene_counts_by_types                   = dict()
+        gene_counts_by_transcript_types        = defaultdict(lambda: defaultdict(int))
         transcript_counts_by_types             = defaultdict(int)
         exon_counts_by_types                   = defaultdict(int)
         transcript_exon_counts_by_types        = defaultdict(int)
@@ -553,6 +562,8 @@ class t_parse_gtf(object):
             for gene_type, genes in genes_by_type.iteritems():
                 gene_counts_by_types[gene_type] =len(genes)
                 for g in genes:
+                    gene_counts_by_transcript_types[gene_type][g.get_transcript_type_names()]+=1
+
                     transcript_counts_by_types[gene_type] += len(g.transcripts)
                     exon_counts_by_types[gene_type] += len(g.exons)
                     all_merged_exon_counts_by_types[gene_type].append(len(overlapping_combined(g.exons, not g.strand)))
@@ -569,6 +580,7 @@ class t_parse_gtf(object):
 
 
 
+
         #
         # print out protein-coding and pseudogene counts first
         #
@@ -579,6 +591,11 @@ class t_parse_gtf(object):
                     logger.info("   %ss." % (gt.capitalize()))
                 else:
                     logger.info("   %s genes." % (gt.capitalize()))
+
+                if gt in gene_counts_by_transcript_types:
+                    for transcript_types in sorted(gene_counts_by_transcript_types[gt].keys()):
+                        logger.info("       %8d genes with %s transcripts" % (gene_counts_by_transcript_types[gt][transcript_types], transcript_types))
+
                 logger.info("     %8d genes." % (gene_counts_by_types[gt]))
                 logger.info("     %8d transcripts." % (transcript_counts_by_types[gt]))
                 logger.info("     %8d exons." % (exon_counts_by_types[gt]))
@@ -605,6 +622,9 @@ class t_parse_gtf(object):
             if gene_type in priority_types:
                 continue
             logger.info("     %5d %-20s genes." % (cnts, gene_type))
+            if gene_type in gene_counts_by_transcript_types:
+                for transcript_types in sorted(gene_counts_by_transcript_types[gene_type].keys()):
+                    logger.info("       %8d genes with %s transcripts" % (gene_counts_by_transcript_types[gene_type][transcript_types], transcript_types))
 
     #_____________________________________________________________________________________
     #
@@ -1132,7 +1152,8 @@ def run_function ():
     #gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
 
     species  = "Mus musculus"
-    gtf_file = "/data/mus/lg/data/ensembl/gtf_cache/release-64/Mus_musculus.NCBIM37.64.gtf"
+    #gtf_file = "/data/mus/lg/data/ensembl/gtf_cache/release-64/Mus_musculus.NCBIM37.64.gtf.gz.cache"
+    gtf_file = "/data/mus/mirror/ftp.ensembl.org/pub/release-64/gtf/mus_musculus/Mus_musculus.NCBIM37.64.gtf.gz"
     #species  = "Canis familiaris"
     #gtf_file = "/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/canis_familiaris/Canis_familiaris.BROADD2.56.gtf.gz"
 
