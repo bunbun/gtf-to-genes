@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -10,14 +12,15 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
+        URL_ROOT:    '',
         VERSION:     '1.07',
-        COLLAPSE_MODINDEX: false,
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="gtf_to_genes v1.07 documentation" href="index.html" />
     <link rel="prev" title="Example 1. Count number of genes with no start or stop codon" href="missing_start_stop_codons.html" /> 
@@ -46,7 +49,7 @@
 <div class="section" id="get-list-of-genes-for-your-desired-species-as-above">
 <h2>1) Get list of genes for your desired species (as above)<a class="headerlink" href="#get-list-of-genes-for-your-desired-species-as-above" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">species_version</span> <span class="o">=</span> <span class="s">&quot;Mus_musculus:58&quot;</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="n">species_version</span> <span class="o">=</span> <span class="s">&quot;Mus_musculus:58&quot;</span>
 
 <span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index&quot;</span>
 <span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
@@ -60,15 +63,15 @@
     <span class="k">print</span> <span class="s">&quot;# of protein coding genes = &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes</span><span class="p">[</span><span class="s">&#39;protein_coding&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="use-quicksect-to-build-an-overlap-intersection-dictionary">
 <h2>2) Use quicksect to build an overlap/intersection dictionary<a class="headerlink" href="#use-quicksect-to-build-an-overlap-intersection-dictionary" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>Enable fast lookups from loci to a particular gene.</p>
+<div><p>Enable fast lookups from loci to a particular gene.</p>
 <p>Coding / UTR go separately</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quicksect</span> <span class="kn">import</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">IntervalNode</span><span class="p">,</span> <span class="n">IntervalTree</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quicksect</span> <span class="kn">import</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">IntervalNode</span><span class="p">,</span> <span class="n">IntervalTree</span>
 <span class="k">def</span> <span class="nf">create_gene_quicksect</span> <span class="p">(</span><span class="n">genes</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create quicksect dictionary for looking up genes</span>
@@ -121,13 +124,13 @@
     <span class="k">return</span> <span class="n">transcript_quicksect</span>
 </pre></div>
 </div>
-</blockquote>
-</blockquote>
+</div></blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="function-to-find-overlap">
 <h2>3) Function to find overlap<a class="headerlink" href="#function-to-find-overlap" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">quicksect</span> <span class="kn">import</span> <span class="n">Feature</span>
 
 <span class="k">def</span> <span class="nf">get_overlapping_gene</span> <span class="p">(</span><span class="n">contig</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">gene_quicksect_by_coding_or_utr</span><span class="p">):</span>
@@ -172,22 +175,22 @@
         <span class="k">print</span> <span class="s">&quot;</span><span class="si">%20s</span><span class="s"> </span><span class="si">%25s</span><span class="s"> </span><span class="si">%25s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gene_type</span><span class="p">,</span> <span class="n">gene_id</span><span class="p">,</span> <span class="n">transcript_id</span><span class="p">,</span> <span class="n">gene_name</span><span class="p">)</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="does-this-work">
 <h2>4) Does this work<a class="headerlink" href="#does-this-work" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>Make the overlap lookup quicksect</p>
+<div><p>Make the overlap lookup quicksect</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">gene_quicksect</span> <span class="o">=</span> <span class="n">create_gene_quicksect</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="n">gene_quicksect</span> <span class="o">=</span> <span class="n">create_gene_quicksect</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span>
 <span class="n">transcript_quicksect</span> <span class="o">=</span> <span class="n">create_transcript_quicksect</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>Try some same regions</p>
 <p><a class="reference external" href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&amp;position=chr2:50100000-52000000">http://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&amp;position=chr2:50100000-52000000</a></p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_overlapping_gene</span> <span class="p">(</span><span class="s">&quot;chr2&quot;</span><span class="p">,</span> <span class="mi">50100000</span><span class="p">,</span> <span class="mi">52000000</span><span class="p">,</span> <span class="n">gene_quicksect</span><span class="p">)</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_overlapping_gene</span> <span class="p">(</span><span class="s">&quot;chr2&quot;</span><span class="p">,</span> <span class="mi">50100000</span><span class="p">,</span> <span class="mi">52000000</span><span class="p">,</span> <span class="n">gene_quicksect</span><span class="p">)</span>
 <span class="go">processed_transcript        ENSMUSG00000085014 AL805965.2</span>
 <span class="go">processed_transcript        ENSMUSG00000085429 AL844592.3</span>
 <span class="go">processed_transcript        ENSMUSG00000085862 BX649293.2</span>
@@ -216,21 +219,21 @@
 <span class="go">              snoRNA        ENSMUSG00000089614 SCARNA14</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p><a class="reference external" href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&amp;position=chr10:69500000-69900000">http://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&amp;position=chr10:69500000-69900000</a></p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_overlapping_gene</span> <span class="p">(</span><span class="s">&quot;chr10&quot;</span><span class="p">,</span> <span class="mi">69500000</span><span class="p">,</span> <span class="mi">69900000</span><span class="p">,</span> <span class="n">gene_quicksect</span><span class="p">)</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_overlapping_gene</span> <span class="p">(</span><span class="s">&quot;chr10&quot;</span><span class="p">,</span> <span class="mi">69500000</span><span class="p">,</span> <span class="mi">69900000</span><span class="p">,</span> <span class="n">gene_quicksect</span><span class="p">)</span>
 <span class="go">      protein_coding        ENSMUSG00000019933 2310015B20Rik</span>
 <span class="go">      protein_coding        ENSMUSG00000037762 Slc16a9</span>
 <span class="go">      protein_coding        ENSMUSG00000048701 Ccdc6</span>
 <span class="go">          pseudogene        ENSMUSG00000052426 AC122923.1</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>Transcripts in
 <a class="reference external" href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&amp;position=chr10:69500000-69900000">http://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&amp;position=chr10:69500000-69900000</a></p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_overlapping_transcript</span> <span class="p">(</span><span class="s">&quot;chr10&quot;</span><span class="p">,</span> <span class="mi">69500000</span><span class="p">,</span> <span class="mi">69900000</span><span class="p">,</span> <span class="n">transcript_quicksect</span><span class="p">)</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_overlapping_transcript</span> <span class="p">(</span><span class="s">&quot;chr10&quot;</span><span class="p">,</span> <span class="mi">69500000</span><span class="p">,</span> <span class="mi">69900000</span><span class="p">,</span> <span class="n">transcript_quicksect</span><span class="p">)</span>
 <span class="go">      protein_coding        ENSMUSG00000019933        ENSMUST00000020090 2310015B20Rik</span>
 <span class="go">      protein_coding        ENSMUSG00000037762        ENSMUST00000046807 Slc16a9</span>
 <span class="go">      protein_coding        ENSMUSG00000037762        ENSMUST00000155933 Slc16a9</span>
@@ -242,8 +245,8 @@
 <span class="go">          pseudogene        ENSMUSG00000052426        ENSMUST00000064271 AC122923.1</span>
 </pre></div>
 </div>
-</blockquote>
-</blockquote>
+</div></blockquote>
+</div></blockquote>
 </div>
 </div>
 
@@ -253,38 +256,38 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Example 2. Find overlaps with any particular gene:</a><ul>
-<li><a class="reference external" href="#get-list-of-genes-for-your-desired-species-as-above">1) Get list of genes for your desired species (as above)</a></li>
-<li><a class="reference external" href="#use-quicksect-to-build-an-overlap-intersection-dictionary">2) Use quicksect to build an overlap/intersection dictionary</a></li>
-<li><a class="reference external" href="#function-to-find-overlap">3) Function to find overlap</a></li>
-<li><a class="reference external" href="#does-this-work">4) Does this work</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Example 2. Find overlaps with any particular gene:</a><ul>
+<li><a class="reference internal" href="#get-list-of-genes-for-your-desired-species-as-above">1) Get list of genes for your desired species (as above)</a></li>
+<li><a class="reference internal" href="#use-quicksect-to-build-an-overlap-intersection-dictionary">2) Use quicksect to build an overlap/intersection dictionary</a></li>
+<li><a class="reference internal" href="#function-to-find-overlap">3) Function to find overlap</a></li>
+<li><a class="reference internal" href="#does-this-work">4) Does this work</a></li>
 </ul>
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="missing_start_stop_codons.html"
-                                  title="previous chapter">Example 1. Count number of genes with no start or stop codon</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/find_overlaps.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="missing_start_stop_codons.html"
+                        title="previous chapter">Example 1. Count number of genes with no start or stop codon</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/find_overlaps.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -302,8 +305,8 @@
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, Leo Goodstadt.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+        &copy; Copyright 2010, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

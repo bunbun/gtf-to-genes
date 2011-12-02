@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -10,14 +12,15 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
+        URL_ROOT:    '',
         VERSION:     '1.07',
-        COLLAPSE_MODINDEX: false,
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="gtf_to_genes v1.07 documentation" href="#" />
     <link rel="next" title="Example 1. Count number of genes with no start or stop codon" href="missing_start_stop_codons.html" /> 
@@ -42,20 +45,20 @@
           <div class="body">
             
   <div class="section" id="gtf-to-genes-fast-access-to-genes-in-gtf-files">
-<h1><tt class="xref docutils literal"><span class="pre">gtf_to_genes</span></tt> Fast access to genes in GTF files<a class="headerlink" href="#gtf-to-genes-fast-access-to-genes-in-gtf-files" title="Permalink to this headline">¶</a></h1>
+<h1><tt class="xref py py-mod docutils literal"><span class="pre">gtf_to_genes</span></tt> Fast access to genes in GTF files<a class="headerlink" href="#gtf-to-genes-fast-access-to-genes-in-gtf-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>gtf_to_genes is a Python parser which caches all the genes / transcripts from a GTF file and
+<div><p>gtf_to_genes is a Python parser which caches all the genes / transcripts from a GTF file and
 caches the data into python classes for high speed access.</p>
 <p>The initial parsing and indexing of a GTF file is a slow process, taking over a minute.
 But once that is done, the genes and transcripts can be retrieved in seconds.</p>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<dl class="docutils">
+<div><dl class="docutils">
 <dt>The following code retrieves all the cached genes for Ensembl v.56 gene build of the Pacific sea squirt:</dt>
 <dd><div class="first last highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Ciona_savignyi:56&quot;</span><span class="p">)</span>
 </pre></div>
@@ -68,22 +71,22 @@ But once that is done, the genes and transcripts can be retrieved in seconds.</p
 genes etc.:</div>
 </div>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">genes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">genes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 <span class="go">[&#39;pseudogene&#39;, &#39;snRNA&#39;, &#39;protein_coding&#39;, &#39;rRNA&#39;, &#39;miRNA&#39;, &#39;misc_RNA&#39;, &#39;snoRNA&#39;]</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;# of protein coding genes = &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes</span><span class="p">[</span><span class="s">&#39;protein_coding&#39;</span><span class="p">])</span>
 <span class="go"># of protein coding genes =  11604</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>A list of <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> objects is stored for each gene type (e.g. <tt class="docutils literal"><span class="pre">protein_coding</span></tt>).
 This includes all exons / coding exons of each gene, as well as its constituent transcripts.</p>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="gene-data">
 <h2>Gene data<a class="headerlink" href="#gene-data" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>Data for each gene is kept in a <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>.</p>
+<div><p>Data for each gene is kept in a <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>.</p>
 <p>Each <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> looks like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
 <span class="c">#   t_gene</span>
@@ -105,7 +108,7 @@ This includes all exons / coding exons of each gene, as well as its constituent 
 </div>
 <p>With the constituent <a class="reference internal" href="#t-transcript-class"><em>transcripts</em></a> looking like this:</p>
 <blockquote>
-<p>Transcript 1:</p>
+<div><p>Transcript 1:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
 <span class="c">#   t_transcript  1</span>
 <span class="c">#</span>
@@ -151,73 +154,73 @@ This includes all exons / coding exons of each gene, as well as its constituent 
 <span class="p">}</span>
 </pre></div>
 </div>
-</blockquote>
-</blockquote>
+</div></blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="exons">
 <h2>Exons<a class="headerlink" href="#exons" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>Exon use for each transcript are stored by reference to the exon lists in its parent gene.
+<div><p>Exon use for each transcript are stored by reference to the exon lists in its parent gene.
 This is both for efficiency and for ease of comparison. Exons that are actually shared
 across transcripts may nonetheless have different coding / transcript start / stop sites.
 To facilitate comparisons, each gene also contains a &#8220;virtual&#8221; list with overlapping adjacent exons merged.</p>
 <p>Let us look at human gene <tt class="docutils literal"><span class="pre">ENSG00000053438</span></tt> in Ensembl v.58:</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Homo_sapiens:56&quot;</span><span class="p">)</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Homo_sapiens:56&quot;</span><span class="p">)</span>
 <span class="n">gi</span> <span class="o">=</span> <span class="n">index_genes_by_gene_id</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span>
 <span class="n">gene</span> <span class="o">=</span> <span class="n">gi</span><span class="p">[</span><span class="s">&#39;ENSG00000053438&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>It uses 4 different exons:</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">coding_exons</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">coding_exons</span>
 <span class="go">[(36149615, 36149805), (36149619, 36149805), (36150758, 36150840), (36151067, 36152092)]</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>Of these, only the third exon appears to be shared across the two transcripts:</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exon_indices</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exon_indices</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">exon_indices</span>
 <span class="go">array(&#39;H&#39;, [0, 2, 3]),</span>
 <span class="go">array(&#39;H&#39;, [1, 3]),</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>However, <tt class="docutils literal"><span class="pre">exons[0]</span></tt> and <tt class="docutils literal"><span class="pre">exons[1]</span></tt> represent overlapping loci with different predicted transcription start sites.
 This is clear when we look at the <tt class="docutils literal"><span class="pre">virtual</span></tt> exon use (after merging overlaps):</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">virtual_exon_indices</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">virtual_exon_indices</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">virtual_exon_indices</span>
 <span class="go">array(&#39;H&#39;, [0, 1, 2])</span>
 <span class="go">array(&#39;H&#39;, [0,    2])</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>Only the middle exon is actually alternatively spliced.</p>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="coordinates">
 <h2>Coordinates<a class="headerlink" href="#coordinates" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>Following the standard python convention, and for ease of coordinate
+<div><p>Following the standard python convention, and for ease of coordinate
 arithmetic, all coordinates are &#8220;zero-based, half-open&#8221;.</p>
 <p>In other words, the first base in a contig or chromosome is base <tt class="docutils literal"><span class="pre">0</span></tt>.
 If a sequence is 10 bases long, it may have the following loci:</p>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
     <span class="s">&#39;beg&#39;</span>           <span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
     <span class="s">&#39;end&#39;</span>           <span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 <p>The length is <tt class="docutils literal"><span class="pre">end</span> <span class="pre">-</span> <span class="pre">beg</span></tt> = <tt class="docutils literal"><span class="pre">20</span> <span class="pre">-</span> <span class="pre">10</span></tt> = <tt class="docutils literal"><span class="pre">10</span></tt></p>
 <p>N.B. the position of the last base in the sequence is base <tt class="docutils literal"><span class="pre">19</span></tt> (not <tt class="docutils literal"><span class="pre">20</span></tt>).
 The <tt class="docutils literal"><span class="pre">end</span></tt> position is always one past the end of the sequence.</p>
 <p>This is the standard python convention, for example, in list slicing (<tt class="docutils literal"><span class="pre">a_list[beg:end]</span></tt>)</p>
-</blockquote>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="classes-for-genes-and-transcripts">
@@ -229,13 +232,15 @@ The <tt class="docutils literal"><span class="pre">end</span></tt> position is a
 <span class="target" id="t-gene-class"></span><dl class="class">
 <dt id="t_gene">
 <em class="property">class </em><tt class="descname">t_gene</tt><a class="headerlink" href="#t_gene" title="Permalink to this definition">¶</a></dt>
-<dd>The <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> class supports the following methods and attributes:</dd></dl>
+<dd><p>The <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> class supports the following methods and attributes:</p>
+</dd></dl>
 
 <blockquote id="t-gene-gene-id">
-<dl class="attribute">
+<div><dl class="attribute">
 <dt id="gene_id">
 <tt class="descname">gene_id</tt><a class="headerlink" href="#gene_id" title="Permalink to this definition">¶</a></dt>
-<dd>Ensembl Gene identifier</dd></dl>
+<dd><p>Ensembl Gene identifier</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="gene_type">
@@ -247,69 +252,80 @@ The <tt class="docutils literal"><span class="pre">end</span></tt> position is a
 <dl class="attribute">
 <dt id="contig">
 <tt class="descname">contig</tt><a class="headerlink" href="#contig" title="Permalink to this definition">¶</a></dt>
-<dd>Chromosome or contig</dd></dl>
+<dd><p>Chromosome or contig</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="beg">
 <tt class="descname">beg</tt><a class="headerlink" href="#beg" title="Permalink to this definition">¶</a></dt>
-<dd>Begin of entire gene</dd></dl>
+<dd><p>Begin of entire gene</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="end">
 <tt class="descname">end</tt><a class="headerlink" href="#end" title="Permalink to this definition">¶</a></dt>
-<dd>End of entire gene</dd></dl>
+<dd><p>End of entire gene</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="strand">
 <tt class="descname">strand</tt><a class="headerlink" href="#strand" title="Permalink to this definition">¶</a></dt>
-<dd>Strand</dd></dl>
+<dd><p>Strand</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="names">
 <tt class="descname">names</tt><a class="headerlink" href="#names" title="Permalink to this definition">¶</a></dt>
-<dd>Comma separated name of gene names</dd></dl>
+<dd><p>Comma separated name of gene names</p>
+</dd></dl>
 
-</blockquote>
+</div></blockquote>
 <blockquote id="t-gene-exons">
-<dl class="attribute">
+<div><dl class="attribute">
 <dt>
 <tt class="descname">exons</tt></dt>
-<dd>List of begins/ends of all exons used by transcripts. Note that some of these exons may overlap.</dd></dl>
+<dd><p>List of begins/ends of all exons used by transcripts. Note that some of these exons may overlap.</p>
+</dd></dl>
 
-</blockquote>
+</div></blockquote>
 <blockquote id="t-gene-coding-exons">
-<dl class="attribute">
+<div><dl class="attribute">
 <dt id="coding_exons">
 <tt class="descname">coding_exons</tt><a class="headerlink" href="#coding_exons" title="Permalink to this definition">¶</a></dt>
-<dd>List of begins/ends of all exon coding sequence used by transcripts. . Note that some of these exons may overlap with each other. Begins and Ends are counted from the first coding base (including any start codon) to the last coding base (including any stop codon).</dd></dl>
+<dd><p>List of begins/ends of all exon coding sequence used by transcripts. . Note that some of these exons may overlap with each other. Begins and Ends are counted from the first coding base (including any start codon) to the last coding base (including any stop codon).</p>
+</dd></dl>
 
-</blockquote>
+</div></blockquote>
 <blockquote id="t-gene-virtual-exons">
-<dl class="attribute">
+<div><dl class="attribute">
 <dt id="virtual_exons">
 <tt class="descname">virtual_exons</tt><a class="headerlink" href="#virtual_exons" title="Permalink to this definition">¶</a></dt>
-<dd>List of begins/ends of loci from <a class="reference internal" href="#t-gene-exons"><em>t_gene.exons</em></a> with overlaps merged together.
+<dd><p>List of begins/ends of loci from <a class="reference internal" href="#t-gene-exons"><em>t_gene.exons</em></a> with overlaps merged together.
 These are useful for looking at transcript exon usage.
 For example, two transcripts may have overlapping first exons which differ by the length of the
 5&#8217; UTR. These will have two separate entries in <a class="reference internal" href="#t-gene-exons"><em>t_gene.exons</em></a> but will map to the same
-&#8220;virtual exon&#8221; because they overlap.</dd></dl>
+&#8220;virtual exon&#8221; because they overlap.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="transcripts">
 <tt class="descname">transcripts</tt><a class="headerlink" href="#transcripts" title="Permalink to this definition">¶</a></dt>
-<dd>List of <a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a></dd></dl>
+<dd><p>List of <a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a></p>
+</dd></dl>
 
 <dl class="staticmethod">
 <dt id="load">
 <em class="property">static </em><tt class="descname">load</tt><big>(</big><em>data_file</em><big>)</big><a class="headerlink" href="#load" title="Permalink to this definition">¶</a></dt>
-<dd>Load data for gene from open file <tt class="docutils literal"><span class="pre">data_file</span></tt></dd></dl>
+<dd><p>Load data for gene from open file <tt class="docutils literal"><span class="pre">data_file</span></tt></p>
+</dd></dl>
 
 <dl class="method">
 <dt id="dump">
 <tt class="descname">dump</tt><big>(</big><em>self</em>, <em>dump_file</em><big>)</big><a class="headerlink" href="#dump" title="Permalink to this definition">¶</a></dt>
-<dd>Save data for gene to open file <tt class="docutils literal"><span class="pre">dump_file</span></tt></dd></dl>
+<dd><p>Save data for gene to open file <tt class="docutils literal"><span class="pre">dump_file</span></tt></p>
+</dd></dl>
 
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="t-transcript">
 <h2>t_transcript<a class="headerlink" href="#t-transcript" title="Permalink to this headline">¶</a></h2>
@@ -320,94 +336,111 @@ For example, two transcripts may have overlapping first exons which differ by th
 <dl class="attribute">
 <dt id="t_transcript.gene">
 <tt class="descname">gene</tt><a class="headerlink" href="#t_transcript.gene" title="Permalink to this definition">¶</a></dt>
-<dd>Link to parent <a class="reference internal" href="#t-gene-class"><em>gene</em></a></dd></dl>
+<dd><p>Link to parent <a class="reference internal" href="#t-gene-class"><em>gene</em></a></p>
+</dd></dl>
 
 </dd></dl>
 
 <blockquote id="t-transcript-cdna-id">
-<dl class="attribute">
+<div><dl class="attribute">
 <dt id="cdna_id">
 <tt class="descname">cdna_id</tt><a class="headerlink" href="#cdna_id" title="Permalink to this definition">¶</a></dt>
-<dd>Ensembl Transcript identifier (e.g. <tt class="docutils literal"><span class="pre">ENST0000000004547</span></tt>)</dd></dl>
+<dd><p>Ensembl Transcript identifier (e.g. <tt class="docutils literal"><span class="pre">ENST0000000004547</span></tt>)</p>
+</dd></dl>
 
-</blockquote>
+</div></blockquote>
 <blockquote id="t-transcript-prot-id">
-<dl class="attribute">
+<div><dl class="attribute">
 <dt id="prot_id">
 <tt class="descname">prot_id</tt><a class="headerlink" href="#prot_id" title="Permalink to this definition">¶</a></dt>
-<dd>Ensembl Translation identifiers (e.g. <tt class="docutils literal"><span class="pre">ENSP0000000004547</span></tt>)</dd></dl>
+<dd><p>Ensembl Translation identifiers (e.g. <tt class="docutils literal"><span class="pre">ENSP0000000004547</span></tt>)</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt>
 <tt class="descname">beg</tt></dt>
-<dd>Genomic start coordinates</dd></dl>
+<dd><p>Genomic start coordinates</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt>
 <tt class="descname">end</tt></dt>
-<dd>Genomic end coordinates</dd></dl>
+<dd><p>Genomic end coordinates</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="coding_beg">
 <tt class="descname">coding_beg</tt><a class="headerlink" href="#coding_beg" title="Permalink to this definition">¶</a></dt>
-<dd>Genomic coding start coordinates</dd></dl>
+<dd><p>Genomic coding start coordinates</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="coding_end">
 <tt class="descname">coding_end</tt><a class="headerlink" href="#coding_end" title="Permalink to this definition">¶</a></dt>
-<dd>Genomic coding end coordinates</dd></dl>
+<dd><p>Genomic coding end coordinates</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt>
 <tt class="descname">names</tt></dt>
-<dd>Comma separated name of transcript names</dd></dl>
+<dd><p>Comma separated name of transcript names</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="exon_indices">
 <tt class="descname">exon_indices</tt><a class="headerlink" href="#exon_indices" title="Permalink to this definition">¶</a></dt>
-<dd>Indices into gene.exons</dd></dl>
+<dd><p>Indices into gene.exons</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="coding_exon_indices">
 <tt class="descname">coding_exon_indices</tt><a class="headerlink" href="#coding_exon_indices" title="Permalink to this definition">¶</a></dt>
-<dd>Indices into <a class="reference internal" href="#t-gene-coding-exons"><em>t_gene.coding_exons</em></a></dd></dl>
+<dd><p>Indices into <a class="reference internal" href="#t-gene-coding-exons"><em>t_gene.coding_exons</em></a></p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="virtual_exon_indices">
 <tt class="descname">virtual_exon_indices</tt><a class="headerlink" href="#virtual_exon_indices" title="Permalink to this definition">¶</a></dt>
-<dd>Indices into <a class="reference internal" href="#t-gene-virtual-exons"><em>t_gene.virtual_exons</em></a></dd></dl>
+<dd><p>Indices into <a class="reference internal" href="#t-gene-virtual-exons"><em>t_gene.virtual_exons</em></a></p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="virtual_coding_exon_indices">
 <tt class="descname">virtual_coding_exon_indices</tt><a class="headerlink" href="#virtual_coding_exon_indices" title="Permalink to this definition">¶</a></dt>
-<dd>Indices into <a class="reference internal" href="#t-gene-virtual-exons"><em>t_gene.virtual_exons</em></a></dd></dl>
+<dd><p>Indices into <a class="reference internal" href="#t-gene-virtual-exons"><em>t_gene.virtual_exons</em></a></p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="coding_frames">
 <tt class="descname">coding_frames</tt><a class="headerlink" href="#coding_frames" title="Permalink to this definition">¶</a></dt>
-<dd>List of coding frames</dd></dl>
+<dd><p>List of coding frames</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="start_codons">
 <tt class="descname">start_codons</tt><a class="headerlink" href="#start_codons" title="Permalink to this definition">¶</a></dt>
-<dd>Indices of start codon(s)</dd></dl>
+<dd><p>Indices of start codon(s)</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="stop_codons">
 <tt class="descname">stop_codons</tt><a class="headerlink" href="#stop_codons" title="Permalink to this definition">¶</a></dt>
-<dd>Indices of stop codon(s)</dd></dl>
+<dd><p>Indices of stop codon(s)</p>
+</dd></dl>
 
 <dl class="staticmethod">
 <dt>
 <em class="property">static </em><tt class="descname">load</tt><big>(</big><em>data_file</em><big>)</big></dt>
-<dd>Load data for gene from open file <tt class="docutils literal"><span class="pre">data_file</span></tt></dd></dl>
+<dd><p>Load data for gene from open file <tt class="docutils literal"><span class="pre">data_file</span></tt></p>
+</dd></dl>
 
 <dl class="method">
 <dt>
 <tt class="descname">dump</tt><big>(</big><em>self</em>, <em>dump_file</em><big>)</big></dt>
-<dd>Save data for gene to open file <tt class="docutils literal"><span class="pre">dump_file</span></tt></dd></dl>
+<dd><p>Save data for gene to open file <tt class="docutils literal"><span class="pre">dump_file</span></tt></p>
+</dd></dl>
 
-</blockquote>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="function-reference">
@@ -424,16 +457,16 @@ Cache the GTF data to a file and write the location of the file to an index file
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><em>index_file</em> &#8211; Index file to hold list of parsed GTF files</li>
-<li><em>search_path_root</em> &#8211; Root directory to start scanning for GTF files</li>
-<li><em>regex_input</em> &#8211; Regular expression to match GTF or gzipped GTF files.
+<li><strong>index_file</strong> &#8211; Index file to hold list of parsed GTF files</li>
+<li><strong>search_path_root</strong> &#8211; Root directory to start scanning for GTF files</li>
+<li><strong>regex_input</strong> &#8211; Regular expression to match GTF or gzipped GTF files.
 Brackets can be used to construct the corresponding cache file name.
 E.g. <tt class="docutils literal"><span class="pre">r&quot;(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$&quot;</span></tt></li>
-<li><em>cache_file_pattern</em> &#8211; Pattern used to construct cache file name after regular expression substitution.
+<li><strong>cache_file_pattern</strong> &#8211; Pattern used to construct cache file name after regular expression substitution.
 Brackets can be used to construct the corresponding cache file name
 E.g. <tt class="docutils literal"><span class="pre">r&quot;\1\2.cache&quot;</span> <span class="pre">or</span> <span class="pre">r&quot;{INDEX_FILE_PATH}/\2.cache&quot;</span></tt>
 might give &#8220;/path/to/gtf/homo_sapiens.cache&#8221;</li>
-<li><em>identifier_pattern</em> &#8211; Pattern used to constuct the (e.g. species) identifier for this GTF file
+<li><strong>identifier_pattern</strong> &#8211; Pattern used to constuct the (e.g. species) identifier for this GTF file
 E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <span class="pre">might</span> <span class="pre">give</span> <span class="pre">&quot;homo_sapiens:47&quot;</span></tt></li>
 </ul>
 </td>
@@ -457,8 +490,8 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><em>index_file_name</em> (string) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
-<li><em>identifier</em> (string) &#8211; identifier parsed from the GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
+<li><strong>index_file_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
+<li><strong>identifier</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; identifier parsed from the GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 </ul>
 </td>
 </tr>
@@ -473,10 +506,10 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <div class="section" id="get-genes-for-all-species-which-match">
 <h3>Get genes for all species which match<a class="headerlink" href="#get-genes-for-all-species-which-match" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<p>Use a regular expression to specify either the species or the GTF file name</p>
+<div><p>Use a regular expression to specify either the species or the GTF file name</p>
 <p>More than one set of genes (species) may match</p>
 <p>Returns a list of <tt class="docutils literal"><span class="pre">identifier</span></tt>, <tt class="docutils literal"><span class="pre">GTF</span> <span class="pre">file</span> <span class="pre">name</span></tt>, <tt class="docutils literal"><span class="pre">genes</span></tt></p>
-</blockquote>
+</div></blockquote>
 <dl class="function">
 <dt id="get_indexed_genes_matching_identifier">
 <tt class="descname">get_indexed_genes_matching_identifier</tt><big>(</big><em>index_file_name</em>, <em>logger</em>, <em>regex_str</em><big>)</big><a class="headerlink" href="#get_indexed_genes_matching_identifier" title="Permalink to this definition">¶</a></dt>
@@ -486,8 +519,8 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><em>index_file_name</em> (string) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
-<li><em>regex_str</em> (string) &#8211; regular expression used to match identifiers parsed from the GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
+<li><strong>index_file_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
+<li><strong>regex_str</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; regular expression used to match identifiers parsed from the GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 </ul>
 </td>
 </tr>
@@ -507,8 +540,8 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><em>index_file_name</em> (string) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
-<li><em>regex_str</em> (string) &#8211; regular expression used to match GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
+<li><strong>index_file_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
+<li><strong>regex_str</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; regular expression used to match GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 </ul>
 </td>
 </tr>
@@ -536,8 +569,8 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><em>item</em> &#8211; Transcript/Gene (<a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a> or <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes or transcripts.</li>
-<li><em>by_prot_id</em> (boolean) &#8211; Index by peptide <a class="reference internal" href="#t-transcript-prot-id"><em>prot_id</em></a> instead of transcript identifier <a class="reference internal" href="#t-transcript-cdna-id"><em>cdna_id</em></a>.</li>
+<li><strong>item</strong> &#8211; Transcript/Gene (<a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a> or <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes or transcripts.</li>
+<li><strong>by_prot_id</strong> (<em>boolean</em>) &#8211; Index by peptide <a class="reference internal" href="#t-transcript-prot-id"><em>prot_id</em></a> instead of transcript identifier <a class="reference internal" href="#t-transcript-cdna-id"><em>cdna_id</em></a>.</li>
 </ul>
 </td>
 </tr>
@@ -561,7 +594,7 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>item</em> &#8211; Gene (<a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes.</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; Gene (<a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes.</td>
 </tr>
 <tr class="field"><th class="field-name">Return type:</th><td class="field-body"><tt class="docutils literal"><span class="pre">dict</span></tt> of <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> indexed by <a class="reference internal" href="#t-gene-gene-id"><em>t_gene.gene_id</em></a></td>
 </tr>
@@ -576,7 +609,7 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <div class="section" id="to-index-entire-directory-tree">
 <h2>To index entire directory tree<a class="headerlink" href="#to-index-entire-directory-tree" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>To download the gtf files from an entire release of Ensembl:</p>
+<div><p>To download the gtf files from an entire release of Ensembl:</p>
 <div class="highlight-python"><pre>cd /data/mus/mirror
 ./wget.py --url ftp.ensembl.org/pub/release-60/gtf/mus_musculus/Mus_musculus.NCBIM37.60.gtf.gz -vv</pre>
 </div>
@@ -616,12 +649,16 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
                 <span class="n">logger</span><span class="p">)</span>
 </pre></div>
 </div>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="to-read-indexed-genes-from-a-particular-species">
 <h2>To read indexed genes from a particular species<a class="headerlink" href="#to-read-indexed-genes-from-a-particular-species" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/data/mus/lg/data/ensembl/gtf.index&quot;</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+
+<span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/data/mus/lg/data/ensembl/gtf.index&quot;</span>
 <span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
@@ -638,12 +675,12 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 ['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']
 # of protein coding genes =  11604</pre>
 </div>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="to-read-indexed-genes-whose-species-match-a-regular-expression">
 <h2>To read indexed genes whose species match a regular expression<a class="headerlink" href="#to-read-indexed-genes-whose-species-match-a-regular-expression" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index&quot;</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index&quot;</span>
 <span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
@@ -664,28 +701,30 @@ Ciona_savignyi:56             (11604 protein coding genes)
 /net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/ciona_savignyi/Ciona_savignyi.CSAV2.0.56.gtf.gz
 ['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']</pre>
 </div>
-</blockquote>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="more-examples">
 <h1>More examples<a class="headerlink" href="#more-examples" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference external" href="missing_start_stop_codons.html">Example 1. Count number of genes with no start or stop codon</a></li>
-<li class="toctree-l1"><a class="reference external" href="find_overlaps.html">Example 2. Find overlaps with any particular gene:</a><ul>
-<li class="toctree-l2"><a class="reference external" href="find_overlaps.html#get-list-of-genes-for-your-desired-species-as-above">1) Get list of genes for your desired species (as above)</a></li>
-<li class="toctree-l2"><a class="reference external" href="find_overlaps.html#use-quicksect-to-build-an-overlap-intersection-dictionary">2) Use quicksect to build an overlap/intersection dictionary</a></li>
-<li class="toctree-l2"><a class="reference external" href="find_overlaps.html#function-to-find-overlap">3) Function to find overlap</a></li>
-<li class="toctree-l2"><a class="reference external" href="find_overlaps.html#does-this-work">4) Does this work</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_start_stop_codons.html">Example 1. Count number of genes with no start or stop codon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="find_overlaps.html">Example 2. Find overlaps with any particular gene:</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="find_overlaps.html#get-list-of-genes-for-your-desired-species-as-above">1) Get list of genes for your desired species (as above)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="find_overlaps.html#use-quicksect-to-build-an-overlap-intersection-dictionary">2) Use quicksect to build an overlap/intersection dictionary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="find_overlaps.html#function-to-find-overlap">3) Function to find overlap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="find_overlaps.html#does-this-work">4) Does this work</a></li>
 </ul>
 </li>
 </ul>
 </div>
+</div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
 </ul>
 <p>gtf_to_genes uses an MIT license.</p>
 </div>
@@ -696,64 +735,64 @@ Ciona_savignyi:56             (11604 protein coding genes)
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="#">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#"><tt class="docutils literal"><span class="pre">gtf_to_genes</span></tt> Fast access to genes in GTF files</a><ul>
-<li><a class="reference external" href="#overview">Overview</a></li>
-<li><a class="reference external" href="#quick-start">Quick start</a></li>
-<li><a class="reference external" href="#gene-data">Gene data</a></li>
-<li><a class="reference external" href="#exons">Exons</a></li>
-<li><a class="reference external" href="#coordinates">Coordinates</a></li>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">gtf_to_genes</span></tt> Fast access to genes in GTF files</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#quick-start">Quick start</a></li>
+<li><a class="reference internal" href="#gene-data">Gene data</a></li>
+<li><a class="reference internal" href="#exons">Exons</a></li>
+<li><a class="reference internal" href="#coordinates">Coordinates</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#classes-for-genes-and-transcripts">Classes for genes and transcripts</a><ul>
-<li><a class="reference external" href="#t-gene">t_gene</a></li>
-<li><a class="reference external" href="#t-transcript">t_transcript</a></li>
+<li><a class="reference internal" href="#classes-for-genes-and-transcripts">Classes for genes and transcripts</a><ul>
+<li><a class="reference internal" href="#t-gene">t_gene</a></li>
+<li><a class="reference internal" href="#t-transcript">t_transcript</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#function-reference">Function Reference</a><ul>
-<li><a class="reference external" href="#indexing-entire-nested-directory-containing-gtf-files">Indexing entire nested directory containing GTF files</a></li>
-<li><a class="reference external" href="#genes-for-matching-species">Genes for matching species</a><ul>
-<li><a class="reference external" href="#get-genes-for-specified-species">Get genes for specified species</a></li>
-<li><a class="reference external" href="#get-genes-for-all-species-which-match">Get genes for all species which match</a></li>
+<li><a class="reference internal" href="#function-reference">Function Reference</a><ul>
+<li><a class="reference internal" href="#indexing-entire-nested-directory-containing-gtf-files">Indexing entire nested directory containing GTF files</a></li>
+<li><a class="reference internal" href="#genes-for-matching-species">Genes for matching species</a><ul>
+<li><a class="reference internal" href="#get-genes-for-specified-species">Get genes for specified species</a></li>
+<li><a class="reference internal" href="#get-genes-for-all-species-which-match">Get genes for all species which match</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#indexing-genes-transcripts-by-identifier">Indexing genes / transcripts by identifier</a></li>
+<li><a class="reference internal" href="#indexing-genes-transcripts-by-identifier">Indexing genes / transcripts by identifier</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#examples">Examples:</a><ul>
-<li><a class="reference external" href="#to-index-entire-directory-tree">To index entire directory tree</a></li>
-<li><a class="reference external" href="#to-read-indexed-genes-from-a-particular-species">To read indexed genes from a particular species</a></li>
-<li><a class="reference external" href="#to-read-indexed-genes-whose-species-match-a-regular-expression">To read indexed genes whose species match a regular expression</a></li>
+<li><a class="reference internal" href="#examples">Examples:</a><ul>
+<li><a class="reference internal" href="#to-index-entire-directory-tree">To index entire directory tree</a></li>
+<li><a class="reference internal" href="#to-read-indexed-genes-from-a-particular-species">To read indexed genes from a particular species</a></li>
+<li><a class="reference internal" href="#to-read-indexed-genes-whose-species-match-a-regular-expression">To read indexed genes whose species match a regular expression</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#more-examples">More examples</a><ul>
+<li><a class="reference internal" href="#more-examples">More examples</a><ul>
 </ul>
 </li>
-<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
-            <h4>Next topic</h4>
-            <p class="topless"><a href="missing_start_stop_codons.html"
-                                  title="next chapter">Example 1. Count number of genes with no start or stop codon</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/index.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="missing_start_stop_codons.html"
+                        title="next chapter">Example 1. Count number of genes with no start or stop codon</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -771,8 +810,8 @@ Ciona_savignyi:56             (11604 protein coding genes)
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, Leo Goodstadt.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+        &copy; Copyright 2010, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

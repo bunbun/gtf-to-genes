@@ -497,6 +497,10 @@ Indexing genes / transcripts by identifier
 
         ::
 
+            from gtf_to_genes import *
+            import logging
+            logger = logging.getLogger("test")
+
             index_file = "/data/mus/lg/data/ensembl/gtf.index"
             from gtf_to_genes import *
             import logging
