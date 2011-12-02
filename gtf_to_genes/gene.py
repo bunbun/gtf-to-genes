@@ -27,6 +27,7 @@
 FILE_VERSION_MAJ = 5
 FILE_VERSION_MIN = 1234
 
+
 import sys, os
 from collections import defaultdict
 import minimal_gtf_iterator
