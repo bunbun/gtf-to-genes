@@ -449,8 +449,8 @@ Indexing genes / transcripts by identifier
 
     ::
 
-        cd /net/cpp-mirror/databases/
-        wget ftp://ftp.ensembl.org/pub/release-58/gtf -r -S 
+        cd /data/mus/mirror
+        ./wget.py --url ftp.ensembl.org/pub/release-60/gtf/mus_musculus/Mus_musculus.NCBIM37.60.gtf.gz -vv
 
     
     Index all downloaded GTF files
@@ -462,14 +462,14 @@ Indexing genes / transcripts by identifier
         logger = logging.getLogger("test")
 
         # Index  file
-        index_file       = "/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index"
+        index_file       = "/data/mus/lg/data/ensembl/gtf.index"
 
         # look for GTF or gzipped GTF files
         regex_input          = r"(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$"
-        search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org"
+        search_path_root = "/data/mus/mirror/ftp.ensembl.org/pub/release-60/gtf"
 
         # put cache file in same directory as GTF file
-        cache_file_pattern   = r"\1\2.cache"
+        cache_file_pattern   = r"/data/mus/lg/data/ensembl/gtf_cache/release-60/\2.cache"
 
         # 
         # uncomment this line to put cache file in same directory index file
@@ -488,6 +488,7 @@ Indexing genes / transcripts by identifier
                         regex_input,
                         cache_file_pattern,
                         identifier_pattern,
+                        False,
                         logger)
 
 =========================================================
@@ -496,12 +497,16 @@ Indexing genes / transcripts by identifier
 
         ::
 
-            index_file = "/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index"
+            from gtf_to_genes import *
+            import logging
+            logger = logging.getLogger("test")
+
+            index_file = "/data/mus/lg/data/ensembl/gtf.index"
             from gtf_to_genes import *
             import logging
             logger = logging.getLogger("test")
             
-            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Ciona_savignyi:56")
+            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Mus_musculus:60")
             print species
             if genes:
                 print genes.keys()

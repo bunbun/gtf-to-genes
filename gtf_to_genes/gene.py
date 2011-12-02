@@ -24,7 +24,7 @@
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
 #################################################################################
-FILE_VERSION_MAJ = 4
+FILE_VERSION_MAJ = 5
 FILE_VERSION_MIN = 1234
 
 import sys, os
@@ -128,6 +128,7 @@ def overlapping_combined( orig_data, reverse = False):
 class t_gene(object):
     """
     """
+
     #_____________________________________________________________________________________
     #
     #   __init__
@@ -160,6 +161,7 @@ class t_gene(object):
                          "coding_exons",
                          "virtual_exons",
                          "transcripts",
+                         "transcripts_types",
                         ]
     def __eq__(self, other):
         if type(other) == t_gene:
@@ -244,7 +246,6 @@ class t_gene(object):
         return gene
 
 
-
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   t_transcript
@@ -252,6 +253,9 @@ class t_gene(object):
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 class t_transcript(object):
+    transcript_type_names = []
+    unique_transcript_type_names = dict()
+
     def get_indices_into_virtual_exons (self, exons, exon_indices):
         """
         Translate from coding /non-coding exons into indices of exons after overlapping
@@ -277,7 +281,7 @@ class t_transcript(object):
     #   __init__
     #_____________________________________________________________________________________
     def __init__(self, gene, cdna_id, names, prot_id, exon_indices, coding_exon_indices,
-                    coding_frames, start_codons, stop_codons,
+                    coding_frames, start_codons, stop_codons, transcript_type,
                     beg = None, end = None, coding_beg = None, coding_end = None):
         """
         Initialise
@@ -291,6 +295,9 @@ class t_transcript(object):
         self.coding_frames          = coding_frames
         self.start_codons           = start_codons
         self.stop_codons            = stop_codons
+        self.transcript_type        = transcript_type
+        if not len(self.gene.exons):
+            raise Exception("No exons for transcript %s (%s) in gene %s" % (cdna_id, prot_id, gene.gene_id))
         self.beg                    = min(self.gene.exons[e][0] for e in self.exon_indices) if beg == None else beg
         self.end                    = max(self.gene.exons[e][1] for e in self.exon_indices) if end == None else end
         if coding_beg != None:
@@ -321,6 +328,7 @@ class t_transcript(object):
                          "virtual_coding_exon_indices",
                          "start_codons",
                          "stop_codons",
+                         "transcript_type"
                         ]
 
     def __eq__(self, other):
@@ -344,7 +352,8 @@ class t_transcript(object):
                cmp(self.beg                 , other.beg                ) or
                cmp(self.end                 , other.end                ) or
                cmp(self.coding_beg          , other.coding_beg         ) or
-               cmp(self.coding_end          , other.coding_end         )
+               cmp(self.coding_end          , other.coding_end         ) or
+               cmp(self.transcript_type     , other.transcript_type         )
                )
     #_____________________________________________________________________________________
     #
@@ -366,6 +375,7 @@ class t_transcript(object):
         do_dump(self.end                     , data_file)
         do_dump(self.coding_beg              , data_file)
         do_dump(self.coding_end              , data_file)
+        do_dump(self.transcript_type         , data_file)
 
     #_____________________________________________________________________________________
     #
@@ -388,6 +398,7 @@ class t_transcript(object):
         end                     = do_load(data_file)
         coding_beg              = do_load(data_file)
         coding_end              = do_load(data_file)
+        transcript_type         = do_load(data_file)
 
         transcript = t_transcript(gene               ,
                                   cdna_id            ,
@@ -398,6 +409,7 @@ class t_transcript(object):
                                   coding_frames      ,
                                   start_codons       ,
                                   stop_codons        ,
+                                  transcript_type    ,
                                   beg                ,
                                   end                ,
                                   coding_beg         ,
@@ -418,6 +430,14 @@ class t_transcript(object):
         self_str = dump_object(self, sorted_attribute_names = self.__slots__)
         self.gene = saved_gene
         return self_str
+
+
+    #_____________________________________________________________________________________
+    #
+    #   get_transcript_type_names
+    #_____________________________________________________________________________________
+    def get_transcript_type_name (self):
+        return t_transcript.transcript_type_names[transcript_type]
 
 
 class t_parse_gtf(object):
@@ -473,15 +493,27 @@ class t_parse_gtf(object):
                 coding_exons         =  sorted(self.cdna_id_to_coding_exons[cdna_id], reverse = not strand)
                 exon_indices         =  array('H', [gene_exons[e] for e in exons])
                 coding_exon_indices  =  array('H', [gene_coding_exons[e] for e in coding_exons])
-                coding_frames =  array('H', [int(frame) for i, frame in sorted(self.cdna_id_to_coding_frames[cdna_id])])
-                start_codons  =  tuple([interval for i, interval in sorted(self.cdna_id_to_start_codons[cdna_id])])
-                stop_codons   =  tuple([interval for i, interval in sorted(self.cdna_id_to_stop_codons[cdna_id])])
+
+                #
+                #   sort by start position
+                #   Each coding frame / start / stop codon is tagged with the beg position of that exon
+                #   Assume each transcript does not have overlapping exons!!!
+                #
+                coding_frames =  array('H', [int(frame) for i, frame in sorted(self.cdna_id_to_coding_frames[cdna_id], reverse = not strand)])
+                start_codons  =  tuple([interval for i, interval in sorted(self.cdna_id_to_start_codons[cdna_id], reverse = not strand)])
+                stop_codons   =  tuple([interval for i, interval in sorted(self.cdna_id_to_stop_codons[cdna_id], reverse = not strand)])
 
                 # check exon numbers correct
                 if len(coding_frames) != len(coding_exons):
                     raise Exception("Not all CDS Exons have frames for %s/%s" %
                                      (gene_id, cdna_id))
 
+
+                transcript_type_name = self.cdna_id_to_transcript_type[cdna_id]
+                if transcript_type_name not in t_transcript.unique_transcript_type_names:
+                    t_transcript.unique_transcript_type_names[transcript_type_name] = len(t_transcript.transcript_type_names)
+                    t_transcript.transcript_type_names.append(transcript_type_name)
+                transcript_type = t_transcript.unique_transcript_type_names[transcript_type_name]
                 transcript = t_transcript(  new_gene,
                                             cdna_id,
                                             list(names),
@@ -490,7 +522,8 @@ class t_parse_gtf(object):
                                             coding_exon_indices,
                                             coding_frames,
                                             start_codons,
-                                            stop_codons)
+                                            stop_codons,
+                                            transcript_type)
                 new_gene.add_transcript(transcript)
 
         return genes_by_type
@@ -583,8 +616,12 @@ class t_parse_gtf(object):
         data_file.write(struct.pack("q", FILE_VERSION_MAJ))
         data_file.write(struct.pack("q", FILE_VERSION_MIN))
 
+        do_dump(t_transcript.transcript_type_names, data_file)
+        do_dump(t_transcript.unique_transcript_type_names, data_file)
+
         # use placeholder of the correct size to hold file positions
         file_pos_placeholder = long(data_file.tell())
+
 
         #
         #   save "directory" recording where features of each type are in the files so we
@@ -671,6 +708,8 @@ class t_parse_gtf(object):
                              FILE_VERSION_MAJ, FILE_VERSION_MIN))
                 return None
 
+            t_transcript.transcript_type_names          = do_load(data_file)
+            t_transcript.unique_transcript_type_names   = do_load(data_file)
 
             #
             #   read directory of gene type sections
@@ -725,12 +764,16 @@ class t_parse_gtf(object):
         #   load from cache
         #
         if not ignore_cache:
-            if self.cache_is_valid(cached_gtf_file_path, logger):
+            if not os.path.exists(cached_gtf_file_path):
+                logger.debug("%s has not been cached will be reparsed" %
+                             (  os.path.basename(gtf_file_path, )))
+            elif self.cache_is_valid(cached_gtf_file_path, logger):
                 return
             else:
                 logger.debug("%s is not a valid cache file. %s will be reparsed" %
                              (os.path.basename(cached_gtf_file_path),
                                 os.path.basename(gtf_file_path)))
+
 
         #
         #   construct from file
@@ -859,6 +902,7 @@ class t_parse_gtf(object):
         self.cdna_id_to_exons        = defaultdict(set)
         self.cdna_id_to_coding_exons = defaultdict(set)
         self.cdna_id_to_coding_frames= defaultdict(set)
+        self.cdna_id_to_transcript_type= dict()
 
 
 
@@ -879,11 +923,12 @@ class t_parse_gtf(object):
 
         try:
             for line_num, gtf_entry in enumerate(minimal_gtf_iterator.iterator(gtf_file)):
-                exon_index  = int(gtf_entry.mAttributes["exon_number"]) - 1
+                #exon_index  = int(gtf_entry.mAttributes["exon_number"]) - 1
                 cdna_id     = gtf_entry.mTranscriptId
                 # gene defined by gene_id, contig, strand
                 strand      = gtf_entry.mStrand in ['1', '+']
-                gene_type   = gtf_entry.mSource
+                gene_type   = gtf_entry.mAttributes["gene_biotype"]
+                transcript_type= gtf_entry.mSource
                 gene_id     = gtf_entry.mGeneId, gtf_entry.mContig, strand
                 beg         = int(gtf_entry.mStart) -1
                 end         = int(gtf_entry.mEnd  )
@@ -891,11 +936,16 @@ class t_parse_gtf(object):
 
 
                 self.feature_set.add(gtf_entry.mFeature)
+
+
+                # transcript_name can be a list of strings: join together
                 if "transcript_name" in gtf_entry.mAttributes:
                     if non_str_sequence(gtf_entry.mAttributes["transcript_name"]):
                         self.cdna_id_to_names[cdna_id].add(" ".join(gtf_entry.mAttributes["transcript_name"]))
                     else:
                         self.cdna_id_to_names[cdna_id].add(gtf_entry.mAttributes["transcript_name"])
+
+                # gene_name can be a list of strings: join together
                 if "gene_name" in gtf_entry.mAttributes:
                     if non_str_sequence(gtf_entry.mAttributes["gene_name"]):
                         self.gene_id_to_names[gene_id].add(" ".join(gtf_entry.mAttributes["gene_name"]))
@@ -903,6 +953,9 @@ class t_parse_gtf(object):
                         self.gene_id_to_names[gene_id].add(gtf_entry.mAttributes["gene_name"])
                 self.gene_id_to_contig_strands.add(gene_id)
                 self.gene_id_to_gene_type[gene_id] =gene_type
+
+                self.cdna_id_to_transcript_type[cdna_id] =transcript_type
+
                 self.gene_types.add(gene_type)
                 self.gene_id_to_cdna_ids[gene_id].add(cdna_id)
 
@@ -918,30 +971,45 @@ class t_parse_gtf(object):
                         logger.warning("Transcript %s has two peptide IDs (%s and %s)"
                                        % (cdna_id, old_prot_id, prot_id))
                     self.cdna_id_to_prot_id[cdna_id] = prot_id
-                    if cdna_id == 'ENST00000493221':
-                        print prot_id
-                    self.cdna_id_to_coding_frames[cdna_id].add((exon_index, gtf_entry.mFrame))
+                    #
+                    ##   DEBUGG
+                    #if cdna_id == 'ENST00000493221':
+                    #    print prot_id
+                    #
+                    #   sort by start position
+                    #   Assume each transcript does not have overlapping exons!!!
+                    #
+                    self.cdna_id_to_coding_frames[cdna_id].add((beg, gtf_entry.mFrame))
                     self.cdna_id_to_coding_exons[cdna_id].add(interval)
 
                 #
                 # start codon
                 #
                 elif gtf_entry.mFeature == "start_codon":
-                    self.cdna_id_to_start_codons[cdna_id] += (exon_index, interval),
+                    #
+                    #   sort by start position
+                    #   Assume each transcript does not have overlapping exons!!!
+                    #
+                    self.cdna_id_to_start_codons[cdna_id] += (beg, interval),
                 #
                 # stop codon
                 #
                 elif gtf_entry.mFeature == "stop_codon":
-                    self.cdna_id_to_stop_codons[cdna_id] += (exon_index, interval),
+                    #
+                    #   sort by start position
+                    #   Assume each transcript does not have overlapping exons!!!
+                    #
+                    self.cdna_id_to_stop_codons[cdna_id] += (beg, interval),
         except:
-            print line_num, "    " + dump_object(gtf_entry)
+            #print line_num, "    " + dump_object(gtf_entry)
+            print line_num, "    ", gtf_entry
             raise
 
         self.gene_types = list(self.gene_types)
         self.feature_set = list(self.feature_set)
         logger.info("  Features = %s" % (", ".join(self.feature_set)))
         logger.info("  Gene types = %s" % (", ".join(self.gene_types)))
-        assert(self.feature_set == ['start_codon', 'exon', 'stop_codon', 'CDS'])
+        #assert(self.feature_set == ['start_codon', 'exon', 'stop_codon', 'CDS'])
 
 
     #_____________________________________________________________________________________
@@ -1060,8 +1128,11 @@ def run_function ():
     # Uncomment Use data files from ensembl
     #
 
-    species  = "Homo sapiens"
-    gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
+    #species  = "Homo sapiens"
+    #gtf_file = "/net/cpp-compute/backup/Leo/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/Homo_sapiens.GRCh37.56.gtf.gz"
+
+    species  = "Mus musculus"
+    gtf_file = "/data/mus/lg/data/ensembl/gtf_cache/release-64/Mus_musculus.NCBIM37.64.gtf"
     #species  = "Canis familiaris"
     #gtf_file = "/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/canis_familiaris/Canis_familiaris.BROADD2.56.gtf.gz"
 

@@ -238,7 +238,7 @@ if __name__ == '__main__':
                 options.log_file = os.path.join(index_file_path, "cache_genes_from_gtf.log")
                 if options.log_file == options.index_file:
                     options.log_file = None
-        options.search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org/"
+        #options.search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org/"
 
     #
     #   mandatory options
@@ -422,7 +422,8 @@ def index_gtf_files(index_file_name, search_path_root, regex_input, cache_file_p
             index_file.write("%s\t%s\t%s\n" % (identifier, file_path, cache_file_path))
 
             gene_structures = gene.t_parse_gtf(identifier)
-            logger.debug("%s\t%s\t%s" %       (identifier, file_path, cache_file_path))
+            if logger:
+                logger.debug("%s\t%s\t%s" %       (identifier, file_path, cache_file_path))
             gene_structures.index_genes (file_path, cache_file_path, logger, ignore_cache = ignore_cache)
 
 

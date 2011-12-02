@@ -13,7 +13,6 @@
 
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
-print sys.path
 import gtf_to_genes
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -182,7 +181,7 @@ htmlhelp_basename = 'gtf_to_genesdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'gtf_to_genes.tex', ur'gtf\_to\_genes Documentation',
-   ur'Leo Goodstadt', 'manual'),
+   u'Leo Goodstadt', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

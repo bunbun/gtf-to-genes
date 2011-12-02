@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Example 1. Count number of genes with no start or stop codon &mdash; gtf_to_genes v1.06 documentation</title>
+    <title>Example 1. Count number of genes with no start or stop codon &mdash; gtf_to_genes v1.07 documentation</title>
     <link rel="stylesheet" href="_static/shared.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '1.06',
+        URL_ROOT:    '#',
+        VERSION:     '1.07',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="gtf_to_genes v1.06 documentation" href="index.html" />
+    <link rel="top" title="gtf_to_genes v1.07 documentation" href="index.html" />
     <link rel="next" title="Example 2. Find overlaps with any particular gene:" href="find_overlaps.html" />
     <link rel="prev" title="gtf_to_genes Fast access to genes in GTF files" href="index.html" /> 
   </head>
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="index.html" title="gtf_to_genes Fast access to genes in GTF files"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">gtf_to_genes v1.06 documentation</a> &raquo;</li> 
+        <li><a href="index.html">gtf_to_genes v1.07 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -101,39 +101,39 @@
 <span class="c">#</span>
 <span class="c">#   counts</span>
 <span class="c">#</span>
-<span class="n">cnt_gene</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_transcript</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_no_start_codon_transcript</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_no_stop__codon_transcript</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_neither__codon_transcript</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_no_start_codon_gene</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_no_stop__codon_gene</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_neither__codon_gene</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_no_start_codon_gene_any</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">=</span> <span class="mf">0</span>
-<span class="n">cnt_neither__codon_gene_any</span> <span class="o">=</span> <span class="mf">0</span>
+<span class="n">cnt_gene</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_transcript</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_no_start_codon_transcript</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_no_stop__codon_transcript</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_neither__codon_transcript</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_no_start_codon_gene</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_no_stop__codon_gene</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_neither__codon_gene</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_no_start_codon_gene_any</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cnt_neither__codon_gene_any</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="c">#</span>
 <span class="c">#   iterate through each gene</span>
 <span class="c">#</span>
 <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">[</span><span class="s">&#39;protein_coding&#39;</span><span class="p">]:</span>
-    <span class="n">cnt_gene</span> <span class="o">+=</span> <span class="mf">1</span>
-    <span class="n">cnt_no_start_codon</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="n">cnt_no_stop__codon</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="n">cnt_neither__codon</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="n">cnt_gene</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">cnt_no_start_codon</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cnt_no_stop__codon</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cnt_neither__codon</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="c">#</span>
     <span class="c">#   iterate through each transcript</span>
     <span class="c">#</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="n">cnt_transcript</span> <span class="o">+=</span> <span class="mf">1</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">start_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stop_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0</span><span class="p">:</span>
-                <span class="n">cnt_neither__codon</span> <span class="o">+=</span> <span class="mf">1</span>
+        <span class="n">cnt_transcript</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">start_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stop_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">cnt_neither__codon</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">cnt_no_start_codon</span> <span class="o">+=</span> <span class="mf">1</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stop_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0</span><span class="p">:</span>
-            <span class="n">cnt_no_stop__codon</span> <span class="o">+=</span> <span class="mf">1</span>
+                <span class="n">cnt_no_start_codon</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stop_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cnt_no_stop__codon</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="c">#</span>
     <span class="c">#   Save counts for this gene</span>
@@ -142,19 +142,19 @@
     <span class="n">cnt_no_stop__codon_transcript</span> <span class="o">+=</span> <span class="n">cnt_no_stop__codon</span>
     <span class="n">cnt_neither__codon_transcript</span> <span class="o">+=</span> <span class="n">cnt_neither__codon</span>
 
-    <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mf">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="k">else</span> <span class="mf">0</span>
-    <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mf">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="k">else</span> <span class="mf">0</span>
-    <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mf">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="k">else</span> <span class="mf">0</span>
+    <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="k">else</span> <span class="mi">0</span>
 
-    <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mf">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mf">0</span>
-    <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mf">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mf">0</span>
-    <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mf">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mf">0</span>
+    <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mi">0</span>
 
 
 <span class="c">#</span>
 <span class="c">#   print summary</span>
 <span class="c">#</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">1</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
     <span class="k">print</span> <span class="s">&quot;</span><span class="si">%6d</span><span class="s"> genes&quot;</span>                                                 <span class="o">%</span> <span class="n">cnt_gene</span>
     <span class="k">print</span> <span class="s">&quot;</span><span class="si">%6d</span><span class="s"> transcripts&quot;</span>                                           <span class="o">%</span> <span class="n">cnt_transcript</span>
     <span class="k">print</span> <span class="s">&quot;</span><span class="si">%6d</span><span class="s"> transcripts with no start codon&quot;</span>                       <span class="o">%</span> <span class="n">cnt_no_start_codon_transcript</span>
@@ -233,12 +233,12 @@
         <li class="right" >
           <a href="index.html" title="gtf_to_genes Fast access to genes in GTF files"
              >previous</a> |</li>
-        <li><a href="index.html">gtf_to_genes v1.06 documentation</a> &raquo;</li> 
+        <li><a href="index.html">gtf_to_genes v1.07 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Leo Goodstadt.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

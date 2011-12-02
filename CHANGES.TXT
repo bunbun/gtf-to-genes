@@ -1,17 +1,22 @@
+= v. 1.07=
+    _31/June/2010_
+    ==Bug Fix:==
+            * dump_object recurses properly
+
 = v. 1.06=
     _15/June/2010_
     ==New Features:==
-	    * Function to index genes by gene_id
-	    * Function to index transcripts by cdna_id or prot_id
+            * Function to index genes by gene_id
+            * Function to index transcripts by cdna_id or prot_id
     ==Documentation:==
-	    * Completely reorganised for clarity
-	    * Example code to find genes or transcripts which overlap specified regions
+            * Completely reorganised for clarity
+            * Example code to find genes or transcripts which overlap specified regions
 
 
 = v. 1.04=
     _15/June/2010_
     ==Bug Fix:==
-	    * Loading of transcript indices and coding_indices now correct
+            * Loading of transcript indices and coding_indices now correct
 
 = v. 1.0=
     _11/March/2010_

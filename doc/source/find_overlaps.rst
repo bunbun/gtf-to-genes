@@ -58,7 +58,7 @@ Example 2. Find overlaps with any particular gene:
                 coding_or_utrs = sorted(transcript_quicksect.keys())
                 for genes in genes.itervalues():
                     for gene in genes:
-                        for transcript in gene.transcripts.values():
+                        for transcript in gene.transcripts:
                             for i in transcript.coding_exon_indices:
                                 exon = gene.coding_exons[i]
                                 transcript_quicksect["coding"].insert(Feature(exon[0], exon[1],

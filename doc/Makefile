@@ -32,7 +32,7 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
 	@echo
-	rsync -t --recursive build/html/* /home/lg/remotehomelg/public_html/oss/gtf_to_genes
+	rsync -t --recursive build/html/* /home/lg/public_html/oss/gtf_to_genes
 	@echo "Build finished. The HTML pages are in _build/html."
 
 dirhtml:

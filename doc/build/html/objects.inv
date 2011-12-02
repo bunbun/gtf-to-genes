@@ -1,6 +1,6 @@
 # Sphinx inventory version 1
 # Project: gtf_to_genes
-# Version: 1.06
+# Version: 1.07
 load staticmethod index.html
 index_transcripts function index.html
 dump method index.html

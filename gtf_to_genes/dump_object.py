@@ -113,48 +113,40 @@ def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorte
         d_str = repr(item)
     elif isinstance(item, dict):
         #print >>sys.stderr, " ^^ dump dict"
-        d_str, use_new_line, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+        d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
     elif isinstance(item, list):
         #print >>sys.stderr, " ^^ dump list"
-        d_str, use_new_line, nested_levels = do_dump_list_or_tuple(item, context, use_new_line, __LIST, line_length, max_levels)
+        d_str, nested_levels = do_dump_list_or_tuple(item, context, use_new_line, __LIST, line_length, max_levels)
     elif isinstance(item, set):
         #print >>sys.stderr, " ^^ dump set"
-        d_str, use_new_line, nested_levels = do_dump_list_or_tuple(sorted(item), context, use_new_line, __SET, line_length, max_levels)
+        d_str, nested_levels = do_dump_list_or_tuple(sorted(item), context, use_new_line, __SET, line_length, max_levels)
     elif isinstance(item, tuple):
         #print >>sys.stderr, " ^^ dump tuple"
-        d_str, use_new_line, nested_levels = do_dump_list_or_tuple(item, context, use_new_line, __TUPLE, line_length, max_levels)
+        d_str, nested_levels = do_dump_list_or_tuple(item, context, use_new_line, __TUPLE, line_length, max_levels)
+    elif isinstance(item, float):
+        d_str = str(item)
     elif isinstance(item, (basestring, int, float, long, complex)):
         d_str = repr(item)
     elif prevent_recursive_str_call or is_recursive (item, set()):
-        d_str, use_new_line, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+        d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
     else:
         try:
-            d_str = pprinter4.pformat(item)
-            if object_regex.match(d_str):
-                raise Exception("Opaque object")
-        except:
-            try:
-                #print >>sys.stderr, " ^^ dump normally"
-                d_str = repr(item)
-                #print >>sys.stderr, "\n\n1:%s>>>>!!!\n\n" % d_str
+            r = getattr(type(item), "__str__", None)
+            # if you have not redefined __str__, I will go down the rabbit hole
+            if isinstance(item, object) and r is object.__str__:
+                d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+            else:
+                d_str = str(item)
                 if object_regex.match(d_str):
-                    #print >>sys.stderr, "\n\n1a:%s>>>>!!!\n\n" % d_str
-                    raise Exception("oops")
-            except:
-                #print >>sys.stderr, "\n\n2:%s>>>>!!!\n\n" % d_str
-                try:
-                    #print >>sys.stderr, " ^^ dump object"
-                    d_str, use_new_line, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
-                    #print >>sys.stderr, "\n\n3:%s>>>>!!!\n\n" % d_str
-                except:
-                    pass
+                    d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+        except:
+            raise
 
     if use_new_line == __No and len(d_str) > line_length:
         if "\n" in d_str:
+            # We have use new line already: ignore
             # something via the string or pformat ended up using new lines
-            use_new_line = __Yes
-            #print >>sys.stderr, " ?? %5s >>%s<< length=%d, line=%d" % (use_new_line, d_str, len(d_str), line_length)
-            return d_str, use_new_line, nested_levels
+            return d_str, nested_levels
 
         # OK try the same but with new lines trying to shorten the line
         #print >>sys.stderr, " !! %5s >>%s<< length=%d, line=%d" % (use_new_line, d_str, len(d_str), line_length)
@@ -162,7 +154,7 @@ def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorte
 
 
     #print >>sys.stderr, " ?? %5s >>%s<< length=%d, line=%d" % (use_new_line, d_str, len(d_str), line_length)
-    return d_str, use_new_line, nested_levels
+    return d_str, nested_levels
 
 
 #_________________________________________________________________________________________
@@ -173,7 +165,8 @@ def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorte
 def do_dump_list_or_tuple (o, context, use_new_line, islist, line_length, max_levels):
 
     if id(o) in context:
-        return "'Back reference to <%s> object'" % (o.__class__.__name__), use_new_line, 0
+        #return "'Back reference to <%s> object'" % (o.__class__.__name__), use_new_line, 0
+        return "'Back reference to <%s> object'" % (o.__class__.__name__), 0
     context.add(id(o))
 
 
@@ -208,10 +201,14 @@ def do_dump_list_or_tuple (o, context, use_new_line, islist, line_length, max_le
     any_use_new_line = use_new_line
     data_strs = []
     for item in o:
-        item_str, item_use_new_line, nested_levels = do_get_item_str (item, context, sub_items_use_new_line, line_length, max_levels)
+        item_str, nested_levels = do_get_item_str (item, context, sub_items_use_new_line, line_length, max_levels)
+        item_use_new_line = "\n" in item_str
         max_nested_levels = max(max_nested_levels, nested_levels)
         any_use_new_line = max(any_use_new_line, item_use_new_line)
         data_strs.append(item_str)
+
+    if max_nested_levels >= max_levels:
+        any_use_new_line = __Yes
 
     if any_use_new_line in (__Yes, __TRY):
         for i, s in enumerate(data_strs):
@@ -225,12 +222,12 @@ def do_dump_list_or_tuple (o, context, use_new_line, islist, line_length, max_le
     context.remove(id(o))
     if any_use_new_line in (__Yes, __TRY):
         ret_str = (brackets1 + "\n" +  ",\n".join(data_strs) + end_comma + "\n" + brackets2)
-        return ret_str, any_use_new_line if max_nested_levels < max_levels else __Yes, max_nested_levels
+        return ret_str, max_nested_levels + 1
     else:
         ret_str = brackets1 +  ", ".join(data_strs) + end_comma + brackets2
         if len(ret_str) > line_length + 4:
             return do_dump_list_or_tuple (o, context, __TRY, islist, line_length + 4, max_levels)
-        return ret_str, any_use_new_line if max_nested_levels < max_levels else __Yes, max_nested_levels + 1
+        return ret_str, max_nested_levels + 1
 
 
 #_________________________________________________________________________________________
@@ -280,7 +277,8 @@ def get_item (o, key):
 def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, sorted_attribute_names = []):
 
     if id(o) in context:
-        return "'Back reference to <%s> object'" % (o.__class__.__name__), use_new_line, 0
+        #return "'Back reference to <%s> object'" % (o.__class__.__name__), use_new_line, 0
+        return "'Back reference to <%s> object'" % (o.__class__.__name__), 0
     context.add(id(o))
 
     if not len(sorted_attribute_names):
@@ -291,7 +289,7 @@ def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, s
     keys = list(sorted_attribute_names)
     attribute_names = get_keys (o)
     if not len(attribute_names):
-        return "{}"
+        return "{}", 0
 
     for key in sorted(attribute_names):
         if key not in keys:
@@ -321,27 +319,33 @@ def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, s
 
     for key in keys:
         item = get_item(o, key)
-        item_str, item_use_new_line, nested_levels = do_get_item_str (item, context, sub_items_use_new_line, line_length, max_levels)
-        max_nested_levels = max(max_nested_levels, nested_levels)
+        item_str, nested_levels = do_get_item_str (item, context, sub_items_use_new_line, line_length, max_levels)
+        item_use_new_line = __Yes if "\n" in item_str else 0
         any_use_new_line = max(any_use_new_line, item_use_new_line)
-        data_strs.append(format_str % (repr(key), item_str))
+        max_nested_levels = max(max_nested_levels, nested_levels)
+        data_strs.append((repr(key), item_str))
+
+    if max_nested_levels >= max_levels:
+        any_use_new_line = __Yes
 
     if any_use_new_line in (__Yes, __TRY):
-        for i, s in enumerate(data_strs):
-            data_strs[i] = indent4 + s.replace("\n", "\n" + indent)
+        for i in range(len(data_strs)):
+            data_strs[i] = indent4 + (format_str % (data_strs[i])).replace("\n", "\n" + indent)
+    else:
+        for i in range(len(data_strs)):
+            data_strs[i] = "%s: %s" % (data_strs[i])
 
-    #print >>sys.stderr, " ++", "%5s" % use_new_line, ">>%s<<" % str(o), any_use_new_line, max_nested_levels
 
     context.remove(id(o))
 
     if any_use_new_line in (__Yes, __TRY):
         ret_str = "{\n" +  ",\n".join(data_strs) + "\n}"
-        return ret_str, any_use_new_line if max_nested_levels < max_levels else __Yes, max_nested_levels
+        return ret_str, max_nested_levels + 1
     else:
         ret_str = '{' +  ", ".join(data_strs) + '}'
         if len(ret_str) > line_length + 4 + max_len + 5:
             return do_dump_object_or_dict (o, context, __TRY, line_length + 4 + max_len + 5, max_levels, sorted_attribute_names)
-        return ret_str, any_use_new_line if max_nested_levels < max_levels else __Yes, max_nested_levels + 1
+        return ret_str, max_nested_levels + 1
 
 
 #_________________________________________________________________________________________
