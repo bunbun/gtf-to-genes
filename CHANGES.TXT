@@ -1,3 +1,7 @@
+= v. 1.08=
+    _02/November/2011_
+    ==Bug Fix:==
+            * Add transcript type (source binary field hijacked by Ensembl)
 = v. 1.07=
     _31/June/2010_
     ==Bug Fix:==
