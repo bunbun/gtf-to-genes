@@ -20,6 +20,15 @@ div.document {
     background-color: #1c4e63;
 }
 
+div.documentwrapper {
+    float: left;
+    width: 100%;
+}
+
+div.bodywrapper {
+    margin: 0 0 0 230px;
+}
+
 div.body {
     background-color: #ffffff;
     color: #000000;
@@ -150,6 +159,7 @@ div.body h6 {
 }
 
 div.body h1 { margin-top: 0; font-size: 200%; color: #FF0080; font-weight:bold; background-color:#F0F0C0}
+div.body h2 { font-size: 160%; }
 div.body h3 { font-size: 140%; color: #800080; margin-left: 0px; margin-top: 40px ;font-style:italic;}        
 div.body h4 { font-size: 110%; color: #008000; margin-left: 10px; margin-top: 40px;background-color: #F0F0F0;} 
 div.body h5 { font-size: 90%; }
@@ -213,12 +223,11 @@ pre {
     border-right: none;
 }
 
-td,th {
-     text-indent: 5px;
+tt {
+    background-color: #ecf0f3;
+    padding: 0 1px 0 1px;
+    font-size: 0.95em;
 }
-
-
-
 /*
    added by me
 */
@@ -290,3 +299,13 @@ h1 .pre { color: #0000FF; font-family: "courier",monospace; font-weight:normal}
 div.body h2 { font-size: 200%; }
 
 
+
+
+
+.warning tt {
+    background: #efc2c2;
+}
+
+.note tt {
+    background: #d6d6d6;
+}
