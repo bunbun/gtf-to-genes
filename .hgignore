@@ -2,4 +2,4 @@
 ^.*\.egg-info/.+
 ^dist
 gtf_to_genes/test_data/test.shortish.cache
-build
+^build
