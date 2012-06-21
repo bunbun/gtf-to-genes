@@ -633,6 +633,12 @@ class t_parse_gtf(object):
     #_____________________________________________________________________________________
     def save_genes_to_cache (self, genes_by_type, CACHED_RESULTS, logger):
         start_time = time.time()
+
+        # make sure directory exists
+        CACHED_RESULTS_DIR = os.path.split(CACHED_RESULTS)[0]
+        if not os.path.exists(CACHED_RESULTS_DIR):
+            os.makedirs(CACHED_RESULTS_DIR)
+
         data_file = open(CACHED_RESULTS, 'wb', 5)
         data_file.write(struct.pack("q", FILE_VERSION_MAJ))
         data_file.write(struct.pack("q", FILE_VERSION_MIN))
