@@ -246,7 +246,7 @@ def get_keys (o):
         return o.keys()
 
     return [attr for attr in dir(o)
-                if not callable(getattr(o,attr)) and not attr.startswith("__")]
+                if hasattr(o, attr) and not callable(getattr(o,attr)) and not attr.startswith("__")]
 
 def get_slots (o):
     """

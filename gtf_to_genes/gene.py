@@ -162,7 +162,8 @@ class t_gene(object):
                          "coding_exons",
                          "virtual_exons",
                          "transcripts",
-                         "transcripts_types",
+                         # unused and undefined
+                         #"transcripts_types",
                         ]
     def __eq__(self, other):
         if type(other) == t_gene:
