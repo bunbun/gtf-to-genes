@@ -3,6 +3,8 @@
 #
 #   gene
 #
+#       ALL coordinates are stored 0-based
+#
 #
 #   Copyright (c) 3/1/2010 Leo Goodstadt
 #
@@ -110,7 +112,7 @@ def overlapping_combined( orig_data, reverse = False):
 
     # check if any subsequent intervals overlap
     for beg, end in data[1:]:
-        if beg - prev_end + 1 > 0:
+        if beg - prev_end > 0:
             new_data.append((prev_beg, prev_end))
             prev_beg = beg
         prev_end = max(end, prev_end)
@@ -958,7 +960,7 @@ class t_parse_gtf(object):
                 gene_type   = gtf_entry.mAttributes["gene_biotype"]
                 transcript_type= gtf_entry.mSource
                 gene_id     = gtf_entry.mGeneId, gtf_entry.mContig, strand
-                beg         = int(gtf_entry.mStart) -1
+                beg         = int(gtf_entry.mStart)
                 end         = int(gtf_entry.mEnd  )
                 interval    = (beg, end)
 
