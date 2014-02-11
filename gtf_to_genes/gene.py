@@ -514,11 +514,15 @@ class t_parse_gtf(object):
 
             gene_exons          = set()
             gene_coding_exons   = set()
+            cdna_id_exon_number_to_exon_id   = dict()
 
             # get all exons and coding exons from transcripts
             for cdna_id in self.gene_id_to_cdna_ids[unique_gene_id]:
                 gene_exons        |= self.cdna_id_to_exons[cdna_id]
                 gene_coding_exons |= self.cdna_id_to_coding_exons[cdna_id]
+                for exon_number, pos, interval, exon_id in self.cdna_id_to_exons[cdna_id]:
+                    if exon_number:
+                        cdna_id_exon_number_to_exon_id[cdna_id, exon_number] = exon_id
 
 
 
@@ -527,8 +531,12 @@ class t_parse_gtf(object):
             gene_coding_exons           = sorted(gene_coding_exons, reverse = not strand, key = lambda exon: exon[1:])
             gene_exon_intervals         = [interval for exon_number, pos, interval, exon_id in gene_exons]
             gene_exon_ids               = [exon_id  for exon_number, pos, interval, exon_id in gene_exons]
-            gene_coding_exon_intervals  = [interval for exon_number, pos, interval, exon_id, frame in gene_coding_exons]
-            gene_coding_exon_ids        = [exon_id  for exon_number, pos, interval, exon_id, frame in gene_coding_exons]
+            gene_coding_exon_intervals  = [interval for exon_number, pos, interval, frame, cdna_id in gene_coding_exons]
+            gene_coding_exon_ids        = [cdna_id_exon_number_to_exon_id.get((cdna_id, exon_number), "MISSING")
+                                                for exon_number, pos, interval, frame, cdna_id in gene_coding_exons]
+            #for exon_number, pos, interval, frame, cdna_id in gene_coding_exons:
+            #    print >>sys.stderr, cdna_id, exon_number, cdna_id_exon_number_to_exon_id.get((cdna_id, exon_number), "MISSING")
+
 
             new_gene = t_gene(gene_id, contig, strand, gene_type,
                               gene_names, gene_exon_intervals, gene_coding_exon_intervals, gene_exon_ids, gene_coding_exon_ids)
@@ -538,8 +546,8 @@ class t_parse_gtf(object):
             #
             # turn gene_exons into dictionary of indices
             #
-            gene_exon_intervals        = dict(izip(gene_exon_intervals,        xrange(len(gene_exons))))
-            gene_coding_exon_intervals = dict(izip(gene_coding_exon_intervals, xrange(len(gene_coding_exons))))
+            gene_exon_intervals        = dict(izip(gene_exon_intervals,        xrange(len(gene_exon_intervals))))
+            gene_coding_exon_intervals = dict(izip(gene_coding_exon_intervals, xrange(len(gene_coding_exon_intervals))))
 
             #print >>sys.stderr, gene_exon_intervals, gene_coding_exon_intervals
 
@@ -565,7 +573,7 @@ class t_parse_gtf(object):
                 #   Assume each transcript does not have overlapping exons!!!
                 #
                 # strip all but frame
-                coding_frames =  array('H', [e[2] for e in coding_exons])
+                coding_frames =  array('H', [e[1] for e in coding_exons])
 
 
                 start_codons  =  tuple(sort_by_exon_number_then_pos (self.cdna_id_to_start_codons[cdna_id]))
@@ -1063,7 +1071,7 @@ class t_parse_gtf(object):
 
                 # common features
 
-                exon_number = int(mAttributes["exon_number"]) - 1 if "exon_number" in mAttributes else None
+                exon_number = int(mAttributes["exon_number"]) if "exon_number" in mAttributes else None
                 strand      = gtf_entry.mStrand in ['1', '+']
                 gene_id     = gtf_entry.mGeneId, gtf_entry.mContig, strand
                 cdna_id     = gtf_entry.mTranscriptId
@@ -1124,7 +1132,7 @@ class t_parse_gtf(object):
                     #   sort by start position
                     #   Assume each transcript does not have overlapping exons!!!
                     #
-                    self.cdna_id_to_coding_exons [cdna_id].add((exon_number, beg, interval, mAttributes.get("exon_id", "MISSING"), int(gtf_entry.mFrame)))
+                    self.cdna_id_to_coding_exons [cdna_id].add((exon_number, beg, interval, int(gtf_entry.mFrame), cdna_id))
 
                 #
                 # start /stop codon
