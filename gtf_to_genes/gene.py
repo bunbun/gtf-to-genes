@@ -301,7 +301,7 @@ class t_transcript(object):
         virtual_exon_indices = []
         for ei in exon_indices:
             exon = exons[ei]
-            for i, ve in enumerate(self.gene.virtual_exons):
+            for i, ve in enumerate(virtual_exons):
                 if exon[INTERVAL_BEG] >= ve[INTERVAL_BEG] and exon[INTERVAL_END] <= ve[INTERVAL_END]:
                     virtual_exon_indices.append(i)
                     break
