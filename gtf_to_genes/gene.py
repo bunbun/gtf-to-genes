@@ -1082,8 +1082,20 @@ class t_parse_gtf(object):
 
         logger.info("  Parsing %s" % gtf_file_path)
 
+        line_num = 0
+        gtf_entry = None
+        cnt_entries_with_no_gene_id = 0
         try:
             for line_num, gtf_entry in enumerate(minimal_gtf_iterator.iterator(gtf_file)):
+
+                # ignore entries without gene_id
+                if not gtf_entry.mGeneId:
+                    cnt_entries_with_no_gene_id += 1
+                    continue
+
+                # ignore entries without transcript_id
+                if not gtf_entry.mTranscriptId:
+                    continue
 
                 mAttributes = gtf_entry.mAttributes
 
@@ -1091,6 +1103,7 @@ class t_parse_gtf(object):
 
                 exon_number = int(mAttributes["exon_number"]) if "exon_number" in mAttributes else None
                 strand      = gtf_entry.mStrand in ['1', '+']
+                # Treat genes on X and Y with the same gene_id as separate
                 gene_id     = gtf_entry.mGeneId, gtf_entry.mContig, strand
                 cdna_id     = gtf_entry.mTranscriptId
                 transcript_type= gtf_entry.mSource
@@ -1166,6 +1179,8 @@ class t_parse_gtf(object):
         except:
             #print line_num, "    " + dump_object(gtf_entry)
             print line_num, "    ", gtf_entry
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            sys.stderr.write(str(exceptionValue)  + "\n")
             raise
 
         self.gene_types = list(self.gene_types)

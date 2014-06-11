@@ -2,17 +2,17 @@
 """
 
     Minimal class for parsing single entries (from a single line of a GTF file)
-    
+
     Original code from Andreas Heger
-    
+
     Tested with GTF version 2.2. data from Ensembl
 
     From http://mblab.wustl.edu/GTF22.html:
 
-        GTF stands for Gene transfer format. It borrows from GFF, but has additional 
+        GTF stands for Gene transfer format. It borrows from GFF, but has additional
         structure that warrants a separate definition and format name.
         Structure is as GFF, so the fields are:
-        <seqname> <source> <feature> <start> <end> <score> <strand> <frame> [attributes] [comments] 
+        <seqname> <source> <feature> <start> <end> <score> <strand> <frame> [attributes] [comments]
 
 """
 
@@ -22,17 +22,17 @@
 #
 #
 #   Copyright (c) 3/11/2010 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -60,7 +60,7 @@ else:
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -69,22 +69,22 @@ else:
 if __name__ == '__main__':
     from optparse import OptionParser
     import StringIO
-    
+
     parser = OptionParser(version="%prog 1.0", usage = "\n\n    %progs [options]")
     parser.add_option("-i", "--input_file", dest="input_file",
-                      metavar="FILE", 
+                      metavar="FILE",
                       type="string",
                       help="Name and path of input file. "
                           "Defaults to reading from STDIN.")
-    
+
     #
     #   general options: verbosity / logging
-    # 
+    #
     parser.add_option("-v", "--verbose", dest = "verbose",
                       action="count", default=0,
                       help="Print more verbose messages for each additional verbose level.")
     parser.add_option("-L", "--log_file", dest="log_file",
-                      metavar="FILE", 
+                      metavar="FILE",
                       type="string",
                       help="Name and path of log file")
     parser.add_option("--skip_parameter_logging", dest="skip_parameter_logging",
@@ -93,20 +93,20 @@ if __name__ == '__main__':
     parser.add_option("--debug", dest="debug",
                         action="count", default=0,
                         help="Set default program parameters in debugging mode.")
-    
-    
-    
-    
+
+
+
+
     # get help string
     f =StringIO.StringIO()
     parser.print_help(f)
     helpstr = f.getvalue()
-    
+
     arguments = " ".join(sys.argv)
-    
+
     (options, remaining_args) = parser.parse_args()
-    
-    
+
+
     #vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     #                                             #
     #   Debug: Change these                       #
@@ -121,12 +121,12 @@ if __name__ == '__main__':
     #   Debug: Change these                       #
     #                                             #
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-    
-    
+
+
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -152,7 +152,7 @@ class Error(Exception):
     """Base class for exceptions in this module."""
     def __str__(self):
         return str(self.message)
-    def _get_message(self, message): return self._message
+    def _get_message(self): return self._message
     def _set_message(self, message): self._message = message
     message = property(_get_message, _set_message)
 
@@ -210,10 +210,10 @@ class gtf_entry:
     #_____________________________________________________________________________________
     def read( self, line ):
         """read gff entry from line.
-        
+
         <seqname> <source> <feature> <start> <end> <score> <strand> <frame> [attributes] [comments]
         """
-        
+
         data = line[:-1].split("\t")
 
         try:
@@ -242,11 +242,11 @@ class gtf_entry:
         # separate into fields
         fields = map( lambda x: x.strip(), attributes.split(";")[:-1])
         self.mAttributes = {}
-        
+
         for f in fields:
-            
+
             d = map( lambda x: x.strip(), f.split(" "))
-            
+
             n,v = d[0], d[1]
             if len(d) > 2: v = d[1:]
 
@@ -261,18 +261,18 @@ class gtf_entry:
                     pass
                 except TypeError:
                     pass
-                
-            if n == "gene_id": 
-                self.mGeneId = v     
-            elif n == "transcript_id": 
+
+            if n == "gene_id":
+                self.mGeneId = v
+            elif n == "transcript_id":
                 self.mTranscriptId = v
-            else: 
+            else:
                 self.mAttributes[n] = v
 
-        if not self.mGeneId:
-            raise ParsingError( "missing attribute 'gene_id' in line %s" % line)
-        if not self.mTranscriptId:
-            raise ParsingError( "missing attribute 'transcript_id' in line %s" % line)
+        #if not self.mGeneId:
+        #    raise ParsingError( "missing attribute 'gene_id' in line %s" % line)
+        #if not self.mTranscriptId:
+        #    raise ParsingError( "missing attribute 'transcript_id' in line %s" % line)
 
 
 
@@ -310,16 +310,16 @@ def iterator( infile ):
 if __name__ == '__main__':
     #
     #   set up log
-    # 
+    #
     import logging
     logger = logging.getLogger(module_name)
     from default_logger import  setup_default_log, MESSAGE
     setup_default_log(logger, options.log_file, options.verbose)
-    
+
 
     #
     #   log programme parameters
-    # 
+    #
     if not options.skip_parameter_logging:
         logger.info("%s" % (arguments))
 
@@ -332,10 +332,10 @@ if __name__ == '__main__':
 if __name__ == '__main__':
     from itertools import izip
     from json import dumps
-    
+
     #
     #   assumes debug mode for unit testing
-    # 
+    #
     if options.debug:
         import unittest
         class Test_minimal_gtf_iterator(unittest.TestCase):
@@ -348,7 +348,7 @@ if __name__ == '__main__':
 
             def test_function(self):
                 """
-                    test 
+                    test
                 """
                 test_results = []
                 for i, gtf_entry in izip(range(2),  iterator(open(os.path.join(exe_path, "test_data", "test.shortish")))):
@@ -359,7 +359,7 @@ if __name__ == '__main__':
 
         #
         #   call unit test without parameters
-        #     
+        #
 
         if sys.argv.count("--debug"):
             sys.argv.remove("--debug")
