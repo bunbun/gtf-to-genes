@@ -37,6 +37,7 @@ import time
 from dump_object import dump_object
 from itertools import izip
 from array import array
+from collections import namedtuple
 import struct
 import gzip
 import marshal
@@ -47,10 +48,8 @@ from random_access_file_by_sections import fill_directory_of_sections, write_dir
 
 
 # how exonic data is stored
-EXON_NUMBER = 0
-GENOMIC_POS = 1
-EXON_DATA   = 2
-EXON_ID     = 3
+t_raw_exon = namedtuple('t_raw_exon', ['exon_number', 'genomic_pos', 'genomic_interval', 'exon_id', 'frame'])
+t_sorted_exon = namedtuple('t_sorted_exon', ['genomic_interval', 'exon_id', 'frame'])
 
 INTERVAL_BEG = 0
 INTERVAL_END = 1
@@ -154,7 +153,7 @@ class t_gene(object):
         self.names        = names
         self.exons        = exons
         self.coding_exons = coding_exons
-        self.exon_ids        = exon_ids
+        self.exon_ids     = exon_ids
         self.coding_exon_ids = coding_exon_ids
         self.beg          = min(e[INTERVAL_BEG] for e in self.exons)
         self.end          = max(e[INTERVAL_END] for e in self.exons)
@@ -162,7 +161,8 @@ class t_gene(object):
 
         #self.exons        = sorted(self.exons       , reverse = not self.strand)
         #self.coding_exons = sorted(self.coding_exons, reverse = not self.strand)
-        self.virtual_exons= overlapping_combined(exons, reverse = not self.strand)
+        self.virtual_exons       = overlapping_combined(exons, reverse = not self.strand)
+        self.virtual_coding_exons= overlapping_combined(coding_exons, reverse = not self.strand)
 
     __slots__ = [
                          "gene_id",
@@ -177,6 +177,7 @@ class t_gene(object):
                          "exon_ids",
                          "coding_exon_ids",
                          "virtual_exons",
+                         "virtual_coding_exons",
                          "transcripts",
                          # unused and undefined
                          #"transcripts_types",
@@ -263,6 +264,7 @@ class t_gene(object):
 
         gene = t_gene(gene_id, contig, strand, gene_type, names, exons, coding_exons, exon_ids, coding_exon_ids)
         gene.virtual_exons= overlapping_combined(exons, reverse = not gene.strand)
+        gene.virtual_coding_exons= overlapping_combined(coding_exons, reverse = not gene.strand)
         cnt_transcripts = do_load(data_file)
         for i in range(cnt_transcripts):
             transcript = t_transcript.load(gene, data_file)
@@ -290,7 +292,7 @@ class t_transcript(object):
     transcript_type_names = []
     unique_transcript_type_names = dict()
 
-    def get_indices_into_virtual_exons (self, exons, exon_indices):
+    def get_indices_into_virtual_exons (self, exons, exon_indices, virtual_exons):
         """
         Translate from coding /non-coding exons into indices of exons after overlapping
         loci have been combined. This allows exon usage across transcripts to be compared
@@ -299,7 +301,7 @@ class t_transcript(object):
         virtual_exon_indices = []
         for ei in exon_indices:
             exon = exons[ei]
-            for i, ve in enumerate(self.gene.virtual_exons):
+            for i, ve in enumerate(virtual_exons):
                 if exon[INTERVAL_BEG] >= ve[INTERVAL_BEG] and exon[INTERVAL_END] <= ve[INTERVAL_END]:
                     virtual_exon_indices.append(i)
                     break
@@ -347,8 +349,8 @@ class t_transcript(object):
         #print >>sys.stderr, "exon_indices=", self.exon_indices
 
 
-        self.virtual_exon_indices = self.get_indices_into_virtual_exons (self.gene.exons, self.exon_indices)
-        self.virtual_coding_exon_indices = self.get_indices_into_virtual_exons (self.gene.coding_exons, self.coding_exon_indices)
+        self.virtual_exon_indices = self.get_indices_into_virtual_exons (self.gene.exons, self.exon_indices, self.gene.virtual_exons)
+        self.virtual_coding_exon_indices = self.get_indices_into_virtual_exons (self.gene.coding_exons, self.coding_exon_indices, self.gene.virtual_coding_exons)
     __slots__ = [
                          "gene",
                          "cdna_id",
@@ -451,8 +453,8 @@ class t_transcript(object):
                                   end                ,
                                   coding_beg         ,
                                   coding_end         )
-        transcript.virtual_exon_indices = transcript.get_indices_into_virtual_exons (transcript.gene.exons, transcript.exon_indices)
-        transcript.virtual_coding_exon_indices = transcript.get_indices_into_virtual_exons (transcript.gene.coding_exons, transcript.coding_exon_indices)
+        transcript.virtual_exon_indices = transcript.get_indices_into_virtual_exons (transcript.gene.exons, transcript.exon_indices, gene.virtual_exons)
+        transcript.virtual_coding_exon_indices = transcript.get_indices_into_virtual_exons (transcript.gene.coding_exons, transcript.coding_exon_indices, gene.virtual_coding_exons)
         return transcript
 
 
@@ -485,11 +487,7 @@ class t_transcript(object):
 def sort_by_exon_number_then_pos (intervals):
     if not intervals:
         return []
-    # None
-    if iter(intervals).next()[0] != None:
-        return [data[EXON_DATA:] for data in sorted(intervals)]
-    else:
-        return [data[EXON_DATA:] for data in sorted(intervals, reverse = not strand, key = lambda frame: frame[GENOMIC_POS:])]
+    return [t_sorted_exon(data.genomic_interval, data.exon_id, data.frame) for data in sorted(intervals)]
 
 
 
@@ -502,6 +500,11 @@ class t_parse_gtf(object):
         """
         Use parse data to construct list of genes
         """
+        #exon.exon_number
+        #exon.genomic_pos
+        #exon.genomic_interval
+        #exon.frame
+        #exon.exon_id
         genes_by_type = defaultdict(list)
         for unique_gene_id in self.gene_id_to_contig_strands:
             gene_id, contig, strand = unique_gene_id
@@ -514,26 +517,36 @@ class t_parse_gtf(object):
 
             gene_exons          = set()
             gene_coding_exons   = set()
-            cdna_id_exon_number_to_exon_id   = dict()
+            IGNORE_FRAME = -1
 
             # get all exons and coding exons from transcripts
             for cdna_id in self.gene_id_to_cdna_ids[unique_gene_id]:
-                gene_exons        |= self.cdna_id_to_exons[cdna_id]
-                gene_coding_exons |= self.cdna_id_to_coding_exons[cdna_id]
-                for exon_number, pos, interval, exon_id in self.cdna_id_to_exons[cdna_id]:
-                    if exon_number:
-                        cdna_id_exon_number_to_exon_id[cdna_id, exon_number] = exon_id
+                exon_number_to_exon_id   = dict()
+                #gene_exons                  |= self.cdna_id_to_exons[cdna_id]
+                coding_exons_in_transcript  = self.cdna_id_to_coding_exons[cdna_id]
+                for exon in self.cdna_id_to_exons[cdna_id]:
+                    if exon.exon_number:
+                        exon_number_to_exon_id[exon.exon_number] = exon.exon_id
+                    gene_exons.add(t_sorted_exon(exon.genomic_interval, exon.exon_id, IGNORE_FRAME))
+                #
+                #   in case coding exons do not have exon_id
+                #
+                for exon in coding_exons_in_transcript:
+                    exon_id = exon.exon_id
+                    #if exon.exon_number and exon_number_to_exon_id[exon.exon_number]:
+                    if not exon_id or exon_id == "MISSING":
+                        exon_id = exon_number_to_exon_id[exon.exon_number]
+                    gene_coding_exons.add(t_sorted_exon(exon.genomic_interval, exon_id, IGNORE_FRAME))
 
 
 
             # sort by position
-            gene_exons                  = sorted(gene_exons,        reverse = not strand, key = lambda exon: exon[1:])
-            gene_coding_exons           = sorted(gene_coding_exons, reverse = not strand, key = lambda exon: exon[1:])
-            gene_exon_intervals         = [interval for exon_number, pos, interval, exon_id in gene_exons]
-            gene_exon_ids               = [exon_id  for exon_number, pos, interval, exon_id in gene_exons]
-            gene_coding_exon_intervals  = [interval for exon_number, pos, interval, frame, cdna_id in gene_coding_exons]
-            gene_coding_exon_ids        = [cdna_id_exon_number_to_exon_id.get((cdna_id, exon_number), "MISSING")
-                                                for exon_number, pos, interval, frame, cdna_id in gene_coding_exons]
+            gene_exons                  = sorted(gene_exons,        reverse = not strand)
+            gene_coding_exons           = sorted(gene_coding_exons, reverse = not strand)
+            gene_exon_intervals         = [exon.genomic_interval for exon in gene_exons]
+            gene_exon_ids               = [exon.exon_id          for exon in gene_exons]
+            gene_coding_exon_intervals  = [exon.genomic_interval for exon in gene_coding_exons]
+            gene_coding_exon_ids        = [exon.exon_id          for exon in gene_coding_exons]
             #for exon_number, pos, interval, frame, cdna_id in gene_coding_exons:
             #    print >>sys.stderr, cdna_id, exon_number, cdna_id_exon_number_to_exon_id.get((cdna_id, exon_number), "MISSING")
 
@@ -546,8 +559,8 @@ class t_parse_gtf(object):
             #
             # turn gene_exons into dictionary of indices
             #
-            gene_exon_intervals        = dict(izip(gene_exon_intervals,        xrange(len(gene_exon_intervals))))
-            gene_coding_exon_intervals = dict(izip(gene_coding_exon_intervals, xrange(len(gene_coding_exon_intervals))))
+            gene_exon_intervals_ids        = dict(izip(gene_exon_intervals,        xrange(len(gene_exon_intervals))))
+            gene_coding_exon_intervals_ids = dict(izip(gene_coding_exon_intervals, xrange(len(gene_coding_exon_intervals))))
 
             #print >>sys.stderr, gene_exon_intervals, gene_coding_exon_intervals
 
@@ -564,8 +577,8 @@ class t_parse_gtf(object):
                 prot_id             = self.cdna_id_to_prot_id[cdna_id] if cdna_id in self.cdna_id_to_prot_id else None
                 exons               = sort_by_exon_number_then_pos (self.cdna_id_to_exons       [cdna_id])
                 coding_exons        = sort_by_exon_number_then_pos (self.cdna_id_to_coding_exons[cdna_id])
-                exon_indices        = array('H', [gene_exon_intervals[e[0]] for e in exons])
-                coding_exon_indices = array('H', [gene_coding_exon_intervals[e[0]] for e in coding_exons])
+                exon_indices        = array('H', [gene_exon_intervals_ids       [e.genomic_interval] for e in exons])
+                coding_exon_indices = array('H', [gene_coding_exon_intervals_ids[e.genomic_interval] for e in coding_exons])
 
                 #
                 #   sort by start position
@@ -573,11 +586,11 @@ class t_parse_gtf(object):
                 #   Assume each transcript does not have overlapping exons!!!
                 #
                 # strip all but frame
-                coding_frames =  array('H', [e[1] for e in coding_exons])
+                coding_frames =  array('H', [e.frame for e in coding_exons])
 
 
-                start_codons  =  tuple(sort_by_exon_number_then_pos (self.cdna_id_to_start_codons[cdna_id]))
-                stop_codons   =  tuple(sort_by_exon_number_then_pos (self.cdna_id_to_stop_codons [cdna_id]))
+                start_codons  =  tuple(exon.genomic_interval for exon in sort_by_exon_number_then_pos (self.cdna_id_to_start_codons[cdna_id]))
+                stop_codons   =  tuple(exon.genomic_interval for exon in sort_by_exon_number_then_pos (self.cdna_id_to_stop_codons [cdna_id]))
 
                 # check exon numbers correct
                 if len(coding_frames) != len(coding_exons):
@@ -767,9 +780,11 @@ class t_parse_gtf(object):
             file_version1 = struct.unpack("q", data_file.read(8))[0]
             file_version2 = struct.unpack("q", data_file.read(8))[0]
             if file_version1 != FILE_VERSION_MAJ or file_version2 != FILE_VERSION_MIN:
-                logger.info("  Cache file wrong version = %d.%d (should be %d.%d)" %
-                            (file_version1, file_version2,
-                             FILE_VERSION_MAJ, FILE_VERSION_MIN))
+                err_msg = "  Cache file wrong version = %d.%d (should be %d.%d)" %(
+                            file_version1, file_version2,
+                             FILE_VERSION_MAJ, FILE_VERSION_MIN)
+                logger.info(err_msg)
+                logger.debug(err_msg)
                 return False
 
             #
@@ -778,6 +793,9 @@ class t_parse_gtf(object):
             file_pos_by_section = read_directory_of_sections (data_file)
 
         except:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            logger.info(str(exceptionType) + str(exceptionValue))
+            logger.debug(str(exceptionType) + str(exceptionValue))
             return False
 
         return True
@@ -1116,7 +1134,7 @@ class t_parse_gtf(object):
                 #   exon
                 #
                 if gtf_entry.mFeature == "exon":
-                    self.cdna_id_to_exons   [cdna_id].add((exon_number, beg, interval, mAttributes.get("exon_id", "MISSING")))
+                    self.cdna_id_to_exons [cdna_id].add(t_raw_exon(exon_number, beg, interval, mAttributes.get("exon_id", "MISSING"), 0))
 
                 #
                 #   CDS
@@ -1129,10 +1147,10 @@ class t_parse_gtf(object):
                                        % (cdna_id, self.cdna_id_to_prot_id[cdna_id], prot_id))
                     self.cdna_id_to_prot_id[cdna_id] = prot_id
                     #
-                    #   sort by start position
+                    #   Will eventually sort by start position
                     #   Assume each transcript does not have overlapping exons!!!
                     #
-                    self.cdna_id_to_coding_exons [cdna_id].add((exon_number, beg, interval, int(gtf_entry.mFrame), cdna_id))
+                    self.cdna_id_to_coding_exons [cdna_id].add(t_raw_exon(exon_number, beg, interval, mAttributes.get("exon_id", "MISSING"), int(gtf_entry.mFrame)))
 
                 #
                 # start /stop codon
@@ -1142,9 +1160,9 @@ class t_parse_gtf(object):
                 #   Assume each transcript does not have overlapping exons!!!
                 #
                 elif gtf_entry.mFeature == "start_codon":
-                    self.cdna_id_to_start_codons[cdna_id].add((exon_number, beg, interval))
+                    self.cdna_id_to_start_codons[cdna_id].add(t_raw_exon(exon_number, beg, interval, "", 0))
                 elif gtf_entry.mFeature == "stop_codon":
-                    self.cdna_id_to_stop_codons[cdna_id].add((exon_number, beg, interval))
+                    self.cdna_id_to_stop_codons[cdna_id].add(t_raw_exon(exon_number, beg, interval, "", 0))
         except:
             #print line_num, "    " + dump_object(gtf_entry)
             print line_num, "    ", gtf_entry
