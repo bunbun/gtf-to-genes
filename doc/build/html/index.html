@@ -1,19 +1,20 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>gtf_to_genes Fast access to genes in GTF files &mdash; gtf_to_genes v1.07 documentation</title>
+    <title>gtf_to_genes Fast access to genes in GTF files &mdash; gtf_to_genes 1.40 documentation</title>
+    
     <link rel="stylesheet" href="_static/shared.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '1.07',
+        URL_ROOT:    './',
+        VERSION:     '1.40',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="gtf_to_genes v1.07 documentation" href="#" />
+    <link rel="top" title="gtf_to_genes 1.40 documentation" href="#" />
     <link rel="next" title="Example 1. Count number of genes with no start or stop codon" href="missing_start_stop_codons.html" /> 
   </head>
   <body>
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="missing_start_stop_codons.html" title="Example 1. Count number of genes with no start or stop codon"
              accesskey="N">next</a> |</li>
-        <li><a href="#">gtf_to_genes v1.07 documentation</a> &raquo;</li> 
+        <li><a href="#">gtf_to_genes 1.40 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -456,7 +457,7 @@ Cache the GTF data to a file and write the location of the file to an index file
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>index_file</strong> &#8211; Index file to hold list of parsed GTF files</li>
 <li><strong>search_path_root</strong> &#8211; Root directory to start scanning for GTF files</li>
 <li><strong>regex_input</strong> &#8211; Regular expression to match GTF or gzipped GTF files.
@@ -489,13 +490,13 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>index_file_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 <li><strong>identifier</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; identifier parsed from the GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 </ul>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of (<tt class="docutils literal"><span class="pre">&lt;matching</span> <span class="pre">identifier&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;original</span> <span class="pre">GTF</span> <span class="pre">path&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;dictionary</span> <span class="pre">of</span> <span class="pre">lists</span> <span class="pre">of</span> <span class="pre">genes&gt;</span></tt>)</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of (<tt class="docutils literal"><span class="pre">&lt;matching</span> <span class="pre">identifier&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;original</span> <span class="pre">GTF</span> <span class="pre">path&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;dictionary</span> <span class="pre">of</span> <span class="pre">lists</span> <span class="pre">of</span> <span class="pre">genes&gt;</span></tt>)</p>
 </td>
 </tr>
 </tbody>
@@ -518,13 +519,13 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>index_file_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 <li><strong>regex_str</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; regular expression used to match identifiers parsed from the GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 </ul>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of tuples of (<tt class="docutils literal"><span class="pre">&lt;matching</span> <span class="pre">identifier&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;original</span> <span class="pre">GTF</span> <span class="pre">path&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;dictionary</span> <span class="pre">of</span> <span class="pre">lists</span> <span class="pre">of</span> <span class="pre">genes&gt;</span></tt>)</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of tuples of (<tt class="docutils literal"><span class="pre">&lt;matching</span> <span class="pre">identifier&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;original</span> <span class="pre">GTF</span> <span class="pre">path&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;dictionary</span> <span class="pre">of</span> <span class="pre">lists</span> <span class="pre">of</span> <span class="pre">genes&gt;</span></tt>)</p>
 </td>
 </tr>
 </tbody>
@@ -539,13 +540,13 @@ E.g. <tt class="docutils literal"><span class="pre">r&quot;\1:\2&quot;</span> <s
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>index_file_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to index file created by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 <li><strong>regex_str</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; regular expression used to match GTF file name by <tt class="docutils literal"><span class="pre">index_gtf_files(...)</span></tt></li>
 </ul>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of tuples of (<tt class="docutils literal"><span class="pre">&lt;matching</span> <span class="pre">identifier&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;original</span> <span class="pre">GTF</span> <span class="pre">path&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;dictionary</span> <span class="pre">of</span> <span class="pre">lists</span> <span class="pre">of</span> <span class="pre">genes&gt;</span></tt>)</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of tuples of (<tt class="docutils literal"><span class="pre">&lt;matching</span> <span class="pre">identifier&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;original</span> <span class="pre">GTF</span> <span class="pre">path&gt;</span></tt>, <tt class="docutils literal"><span class="pre">&lt;dictionary</span> <span class="pre">of</span> <span class="pre">lists</span> <span class="pre">of</span> <span class="pre">genes&gt;</span></tt>)</p>
 </td>
 </tr>
 </tbody>
@@ -568,13 +569,13 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>item</strong> &#8211; Transcript/Gene (<a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a> or <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes or transcripts.</li>
 <li><strong>by_prot_id</strong> (<em>boolean</em>) &#8211; Index by peptide <a class="reference internal" href="#t-transcript-prot-id"><em>prot_id</em></a> instead of transcript identifier <a class="reference internal" href="#t-transcript-cdna-id"><em>cdna_id</em></a>.</li>
 </ul>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">dict</span></tt> of <a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a> indexed by <a class="reference internal" href="#t-transcript-prot-id"><em>t_transcript.prot_id</em></a> or <a class="reference internal" href="#t-transcript-cdna-id"><em>t_transcript.cdna_id</em></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">dict</span></tt> of <a class="reference internal" href="#t-transcript-class"><em>t_transcript</em></a> indexed by <a class="reference internal" href="#t-transcript-prot-id"><em>t_transcript.prot_id</em></a> or <a class="reference internal" href="#t-transcript-cdna-id"><em>t_transcript.cdna_id</em></a></p>
 </td>
 </tr>
 </tbody>
@@ -594,9 +595,9 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; Gene (<a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; Gene (<a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>) or <tt class="docutils literal"><span class="pre">list</span></tt> / <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">set</span></tt> of genes.</td>
 </tr>
-<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><tt class="docutils literal"><span class="pre">dict</span></tt> of <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> indexed by <a class="reference internal" href="#t-gene-gene-id"><em>t_gene.gene_id</em></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><tt class="docutils literal"><span class="pre">dict</span></tt> of <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> indexed by <a class="reference internal" href="#t-gene-gene-id"><em>t_gene.gene_id</em></a></td>
 </tr>
 </tbody>
 </table>
@@ -610,8 +611,9 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <h2>To index entire directory tree<a class="headerlink" href="#to-index-entire-directory-tree" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><p>To download the gtf files from an entire release of Ensembl:</p>
-<div class="highlight-python"><pre>cd /data/mus/mirror
-./wget.py --url ftp.ensembl.org/pub/release-60/gtf/mus_musculus/Mus_musculus.NCBIM37.60.gtf.gz -vv</pre>
+<div class="highlight-python"><div class="highlight"><pre>cd /data/mus/mirror
+./wget.py --url ftp.ensembl.org/pub/release-60/gtf/mus_musculus/Mus_musculus.NCBIM37.60.gtf.gz -vv
+</pre></div>
 </div>
 <p>Index all downloaded GTF files</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
@@ -671,9 +673,10 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 </pre></div>
 </div>
 <p>Produces:</p>
-<div class="highlight-python"><pre>Ciona_savignyi:56
-['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']
-# of protein coding genes =  11604</pre>
+<div class="highlight-python"><div class="highlight"><pre>Ciona_savignyi:56
+[&#39;pseudogene&#39;, &#39;snRNA&#39;, &#39;protein_coding&#39;, &#39;rRNA&#39;, &#39;miRNA&#39;, &#39;misc_RNA&#39;, &#39;snoRNA&#39;]
+# of protein coding genes =  11604
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -693,13 +696,14 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 </pre></div>
 </div>
 <p>Produces:</p>
-<div class="highlight-python"><pre>Ciona_intestinalis:56         (14180 protein coding genes)
+<div class="highlight-python"><div class="highlight"><pre>Ciona_intestinalis:56         (14180 protein coding genes)
 /net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/ciona_intestinalis/Ciona_intestinalis.JGI2.56.gtf.gz
-['rRNA', 'snRNA', 'protein_coding', 'miRNA', 'misc_RNA', 'snoRNA']
+[&#39;rRNA&#39;, &#39;snRNA&#39;, &#39;protein_coding&#39;, &#39;miRNA&#39;, &#39;misc_RNA&#39;, &#39;snoRNA&#39;]
 
 Ciona_savignyi:56             (11604 protein coding genes)
 /net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/ciona_savignyi/Ciona_savignyi.CSAV2.0.56.gtf.gz
-['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']</pre>
+[&#39;pseudogene&#39;, &#39;snRNA&#39;, &#39;protein_coding&#39;, &#39;rRNA&#39;, &#39;miRNA&#39;, &#39;misc_RNA&#39;, &#39;snoRNA&#39;]
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -766,9 +770,7 @@ Ciona_savignyi:56             (11604 protein coding genes)
 <li><a class="reference internal" href="#to-read-indexed-genes-whose-species-match-a-regular-expression">To read indexed genes whose species match a regular expression</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#more-examples">More examples</a><ul>
-</ul>
-</li>
+<li><a class="reference internal" href="#more-examples">More examples</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
@@ -783,7 +785,7 @@ Ciona_savignyi:56             (11604 protein coding genes)
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -806,12 +808,12 @@ Ciona_savignyi:56             (11604 protein coding genes)
         <li class="right" >
           <a href="missing_start_stop_codons.html" title="Example 1. Count number of genes with no start or stop codon"
              >next</a> |</li>
-        <li><a href="#">gtf_to_genes v1.07 documentation</a> &raquo;</li> 
+        <li><a href="#">gtf_to_genes 1.40 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010, Leo Goodstadt.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
