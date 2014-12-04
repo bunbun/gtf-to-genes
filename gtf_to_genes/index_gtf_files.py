@@ -56,7 +56,7 @@
             >> import logging
             >> logger = logging.getLogger("test")
             >>
-            >> species, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Ciona_savignyi:56")
+            >> species_id, gtf_path, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Ciona_savignyi:56")
             >> print species
             >> if genes:
             >>     print genes.keys()
@@ -142,109 +142,62 @@ else:
 
 
 if __name__ == '__main__':
-    def check_mandatory_options (options, mandatory_options, helpstr):
-        """
-        Check if specified mandatory options have b een defined
-        """
-        missing_options = []
-        for o in mandatory_options:
-            if not getattr(options, o):
-                missing_options.append("--" + o)
+    import argparse
+    parser = argparse.ArgumentParser(description='Parses and indices gtf files for fast future '
+                                     'retrieval?')
 
-        if not len(missing_options):
-            return
+    #
+    #   Multiple input files
+    #
+    # at least one argument, otherwise nargs='*',
+    parser.add_argument("-r", "--search_path_root",
+                        required = True,
+                        metavar="FILE",
+                        help="Root of directory tree which contain GTF files.")
 
-        raise Exception("Missing mandatory parameter%s: %s.\n\n%s\n\n" %
-                        ("s" if len(missing_options) > 1 else "",
-                         ", ".join(missing_options),
-                         helpstr))
-
-
-    from optparse import OptionParser
-    import StringIO
-
-    parser = OptionParser(version="%prog 1.0", usage = "\n\n    %progs [options]")
-    parser.add_option("-r", "--search_path_root", dest="search_path_root",
-                      metavar="FILE",
-                      type="string",
-                      help="Root of directory tree which contain GTF files.")
-    parser.add_option("-i", "--index_file", dest="index_file",
-                      metavar="FILE",
-                      type="string",
-                      help="Name and path of index file. "
-                          "Index from release/species to gtf file name.")
-    parser.add_option("--ignore_cache", dest="ignore_cache",
-                        action="store_true", default=False,
+    parser.add_argument("-i", "--index_file",
+                        required = True,
+                        metavar="FILE",
+                        help="Name and path of index file. "
+                             "Index from release/species to gtf file name.")
+    parser.add_argument("--ignore_cache",
+                        action="store_true",
                         help="Re-cache genes from GTF.")
-    parser.add_option("--regex_input", dest="regex_input",
+    parser.add_argument("--regex_input",
                         metavar="REGEX",
-                        type="string",
-                        default = "(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$",
+                                                # Ensembl naming scheme
+                        default = "((?:.+\/)?)" # path
+                                  "(([^.]+)\."  # species
+                                  ".+\."        # assembly name
+                                  "(.+)"        # version name
+                                  "\.gtf(?:\.gz)?)$",
                         help="Regular expression to recognise GTF files and "
                              "to construct the file name of GTF "
                              "cache and two identifiers from the path of the GTF file. "
                              "Defaults to matching the file name part of the path.")
-    parser.add_option("--cache_file_pattern", dest="cache_file_pattern",
-                        metavar="STRING",
-                        type="string",
+    parser.add_argument("--cache_file_pattern",
                         default = r"\1\2.cache",
                         #default = r"{INDEX_FILE_PATH}/\2.cache",
                         help="Regular expression used to construct file name of GTF cache. "
                              "Defaults to adding a '.cache' suffix")
-    parser.add_option("--identifier_pattern", dest="identifier_pattern",
-                        metavar="STRING",
-                        type="string",
+    parser.add_argument("--identifier_pattern", dest="identifier_pattern",
                         default = r"\3:\4",
                         help="Regular expression used to construct the name identifying the GTF cached data "
                              "in the GTF file index.")
 
-    #
-    #   general options: verbosity / logging
-    #
-    parser.add_option("-v", "--verbose", dest = "verbose",
-                      action="count", default=0,
-                      help="Print more verbose messages for each additional verbose level.")
-    parser.add_option("-L", "--log_file", dest="log_file",
-                      metavar="FILE",
-                      type="string",
-                      help="Name and path of log file")
-    parser.add_option("--skip_parameter_logging", dest="skip_parameter_logging",
-                        action="store_true", default=False,
-                        help="Do not print program parameters to log.")
-    parser.add_option("--debug", dest="debug",
-                        action="count", default=0,
-                        help="Set default program parameters in debugging mode.")
+    common_group = parser.add_argument_group('Common arguments')
+    common_group.add_argument('--verbose', "-v", const=1,
+                              metavar="VERBOSITY", default=0, nargs='?', type= int,
+                              help="Print more verbose messages for each additional verbose level.")
+    common_group.add_argument('--version', action='version', version='%(prog)s 1.0')
+    common_group.add_argument("-L", "--log_file", metavar="FILE", type=str,
+                                  help="Name and path of log file")
 
+    options = parser.parse_args()
 
+    if not options.log_file:
+        options.log_file            = os.path.join("index_gtf_files.log")
 
-
-    # get help string
-    f =StringIO.StringIO()
-    parser.print_help(f)
-    helpstr = f.getvalue()
-    (options, remaining_args) = parser.parse_args()
-
-    if options.debug:
-        if not options.verbose:
-            options.verbose = 1
-        if not options.search_path_root:
-            options.search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org"
-        if not options.index_file:
-            options.index_file = os.path.join(options.search_path_root, "gtf.index")
-        if not options.log_file:
-            options.log_file = os.path.splitext(options.index_file)[0] + ".log"
-            if options.log_file == options.index_file:
-                index_file_path = os.path.split(os.path.abspath(options.index_file))[0]
-                options.log_file = os.path.join(index_file_path, "cache_genes_from_gtf.log")
-                if options.log_file == options.index_file:
-                    options.log_file = None
-        #options.search_path_root = "/net/cpp-mirror/databases/ftp.ensembl.org/"
-
-    #
-    #   mandatory options
-    #
-    mandatory_options = ["log_file", "index_file", "search_path_root"]
-    check_mandatory_options (options, mandatory_options, helpstr)
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -282,9 +235,10 @@ def get_indexed_genes_for_identifier(index_file_name, logger, identifier):
     :rtype tuple of (<matching identifier>, <original GTF path>, <dictionary of lists of genes>)
     """
     index_data = sorted(_read_index_file(index_file_name),  reverse = True)
-
+    all_ids = []
     # go through in reverse order of id2 so that higher version numbers are retrieved first
     for id, original_gtf_path, gtf_cache_path in index_data:
+        all_ids.append(id)
         if id == identifier or id == identifier.replace(' ', '_'):
             gene_structures = gene.t_parse_gtf(id)
             logger.info("Get indexed genes for %s from %s" % (id, original_gtf_path))
@@ -292,7 +246,7 @@ def get_indexed_genes_for_identifier(index_file_name, logger, identifier):
                                                             logger))
     logger.info("Identifier %s was not found in the index file %s" %
                         (identifier, index_file_name))
-    return (None,None,None)
+    return (None, all_ids, None)
 
 #_________________________________________________________________________________________
 #
@@ -406,6 +360,8 @@ def index_gtf_files(index_file_name, search_path_root, regex_input, cache_file_p
     Iterate through a directory, looking for all GTF files matching a regular expression.
     Cache the GTF data to a file and write the location of the file to an index file
     """
+    if options.verbose > 1:
+        logger.debug("Using regular expression %s" % regex_input)
 
     index_file = open(index_file_name,  "w")
     index_file_path = os.path.dirname(index_file_name)
@@ -416,6 +372,8 @@ def index_gtf_files(index_file_name, search_path_root, regex_input, cache_file_p
             m = regex.search(file_path)
             if not m:
                 continue
+            if options.verbose > 1:
+                logger.debug("Indexing %s" % file_name)
             cache_file_path  = regex.sub(cache_file_pattern.format(INDEX_FILE_PATH = index_file_path),
                                         file_path)
             identifier      = regex.sub(identifier_pattern , file_path)
@@ -443,13 +401,11 @@ if __name__ == '__main__':
     from default_logger import  setup_default_log, MESSAGE
     setup_default_log(logger, options.log_file, options.verbose)
 
-
     #
     #   log programme parameters
     #
-    if not options.skip_parameter_logging:
-        programme_name = os.path.split(sys.argv[0])[1]
-        logger.info("%s" % (" ".join(sys.argv)))
+    logger.info(" ".join(sys.argv))
+
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 

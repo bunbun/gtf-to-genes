@@ -35,7 +35,8 @@
 
 import sys, os
 from collections import defaultdict
-
+import array
+import textwrap
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -73,7 +74,7 @@ def is_recursive (item, context):
 
     context.add(id(item))
 
-    if item == None:
+    if item is None:
         return False
 
     if isinstance(item, dict):
@@ -106,14 +107,14 @@ def is_recursive (item, context):
 #   do_get_item_str
 
 #_________________________________________________________________________________________
-def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorted_attribute_names = [], prevent_recursive_str_call = False):
+def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorted_attribute_names = [], ignored_attribute_names =set(), prevent_recursive_str_call = False):
 
     nested_levels = 0
-    if item == None:
+    if item is None:
         d_str = repr(item)
     elif isinstance(item, dict):
         #print >>sys.stderr, " ^^ dump dict"
-        d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+        d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names, ignored_attribute_names)
     elif isinstance(item, list):
         #print >>sys.stderr, " ^^ dump list"
         d_str, nested_levels = do_dump_list_or_tuple(item, context, use_new_line, __LIST, line_length, max_levels)
@@ -125,20 +126,27 @@ def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorte
         d_str, nested_levels = do_dump_list_or_tuple(item, context, use_new_line, __TUPLE, line_length, max_levels)
     elif isinstance(item, float):
         d_str = str(item)
+    elif isinstance(item, array.array):
+        #d_str, nested_levels = do_dump_list_or_tuple(list(item), context, __No, __LIST, line_length, max_levels)
+        d_str = textwrap.fill(repr(item),  line_length)
     elif isinstance(item, (basestring, int, float, long, complex)):
-        d_str = repr(item)
-    elif prevent_recursive_str_call or is_recursive (item, set()):
-        d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+        d_str = textwrap.fill(repr(item),  line_length)
+    elif prevent_recursive_str_call and is_recursive (item, set()):
+        #print >> sys.stderr, "prevent_recursive_str_call", item.__class__
+        d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names, ignored_attribute_names)
     else:
         try:
             r = getattr(type(item), "__str__", None)
             # if you have not redefined __str__, I will go down the rabbit hole
             if isinstance(item, object) and r is object.__str__:
-                d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+                #print >> sys.stderr, "Original __str__", item.__class__
+                d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names, ignored_attribute_names)
             else:
+                #print >> sys.stderr, "Redefined __str__", item.__class__
                 d_str = str(item)
                 if object_regex.match(d_str):
-                    d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names)
+                    #print >> sys.stderr, "Rubbish __str__", item.__class__
+                    d_str, nested_levels = do_dump_object_or_dict(item, context, use_new_line, line_length, max_levels, sorted_attribute_names, ignored_attribute_names)
         except:
             raise
 
@@ -150,7 +158,8 @@ def do_get_item_str (item, context, use_new_line, line_length, max_levels, sorte
 
         # OK try the same but with new lines trying to shorten the line
         #print >>sys.stderr, " !! %5s >>%s<< length=%d, line=%d" % (use_new_line, d_str, len(d_str), line_length)
-        return do_get_item_str(item, context, __TRY, line_length, max_levels)
+        return do_get_item_str(item, context, __TRY, line_length, max_levels, sorted_attribute_names, ignored_attribute_names, prevent_recursive_str_call)
+
 
 
     #print >>sys.stderr, " ?? %5s >>%s<< length=%d, line=%d" % (use_new_line, d_str, len(d_str), line_length)
@@ -265,16 +274,23 @@ def get_item (o, key):
     Helper function to get item given a key (for dict) or attribute name (for objects)
     """
     if isinstance(o, dict):
-        return o[key]
+        return o[key], key
 
-    return getattr(o, key)
+    attr = getattr(o, key)
+
+    if callable(attr):
+        if key.startswith("get_"):
+            key = key[4:]
+        return attr(), key
+    else:
+        return attr, key
 
 #_________________________________________________________________________________________
 
 #   do_dump_object
 
 #_________________________________________________________________________________________
-def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, sorted_attribute_names = []):
+def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, sorted_attribute_names, ignored_attribute_names):
 
     if id(o) in context:
         #return "'Back reference to <%s> object'" % (o.__class__.__name__), use_new_line, 0
@@ -291,10 +307,13 @@ def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, s
     if not len(attribute_names):
         return "{}", 0
 
+    #print >>sys.stderr,  "ignored_attribute_names=", ignored_attribute_names
     for key in sorted(attribute_names):
-        if key not in keys:
+        if key not in keys and key not in ignored_attribute_names:
             keys.append(key)
 
+
+    #print >>sys.stderr, "!!!keys = ", keys
 
     data_strs = []
 
@@ -318,12 +337,12 @@ def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, s
 
 
     for key in keys:
-        item = get_item(o, key)
+        item, key_name = get_item(o, key)
         item_str, nested_levels = do_get_item_str (item, context, sub_items_use_new_line, line_length, max_levels)
         item_use_new_line = __Yes if "\n" in item_str else 0
         any_use_new_line = max(any_use_new_line, item_use_new_line)
         max_nested_levels = max(max_nested_levels, nested_levels)
-        data_strs.append((repr(key), item_str))
+        data_strs.append((repr(key_name), item_str))
 
     if max_nested_levels >= max_levels:
         any_use_new_line = __Yes
@@ -344,7 +363,7 @@ def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, s
     else:
         ret_str = '{' +  ", ".join(data_strs) + '}'
         if len(ret_str) > line_length + 4 + max_len + 5:
-            return do_dump_object_or_dict (o, context, __TRY, line_length + 4 + max_len + 5, max_levels, sorted_attribute_names)
+            return do_dump_object_or_dict (o, context, __TRY, line_length + 4 + max_len + 5, max_levels, sorted_attribute_names, ignored_attribute_names)
         return ret_str, max_nested_levels + 1
 
 
@@ -353,7 +372,7 @@ def do_dump_object_or_dict (o, context, use_new_line, line_length, max_levels, s
 #   dump_object
 
 #_________________________________________________________________________________________
-def dump_object (item, line_length = 80, max_levels = 4, sorted_attribute_names = []):
+def dump_object (item, line_length = 80, max_levels = 4, sorted_attribute_names = [], ignored_attribute_names =set()):
     """
     Dump anything to string recursively
     """
@@ -362,7 +381,7 @@ def dump_object (item, line_length = 80, max_levels = 4, sorted_attribute_names 
         use_new_line = __Yes
     context = set()
     return do_get_item_str (item, context, use_new_line, line_length,
-                            max_levels, sorted_attribute_names, prevent_recursive_str_call = True)[0]
+                            max_levels, sorted_attribute_names, ignored_attribute_names, prevent_recursive_str_call = True)[0]
 #_________________________________________________________________________________________
 
 #   dump_list
