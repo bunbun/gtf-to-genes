@@ -40,7 +40,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'gtf_to_genes'
-copyright = u'2010, Leo Goodstadt'
+copyright = u'2014, Leo Goodstadt'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

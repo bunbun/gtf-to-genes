@@ -285,6 +285,17 @@ def get_indexed_genes_matching_identifier(index_file_name, logger, regex_str):
                             (regex_str, index_file_name))
     return results
 
+
+#_________________________________________________________________________________________
+#
+#    get_indexed_genes_matching_gtf_file_name
+#_________________________________________________________________________________________
+def list_indexed_species(index_file_name):
+    """
+    Return a list of indexed species
+    """
+    return [ii[0 ] for ii in _read_index_file (index_file_name)]
+
 #_________________________________________________________________________________________
 #
 #    get_indexed_genes_matching_gtf_file_name

@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-from gtf_to_genes import get_indexed_genes_for_identifier, __version__
+from gtf_to_genes import get_indexed_genes_for_identifier, __version__, list_indexed_species
 from intervals import t_intervals, t_interval
 from collections import defaultdict
 
@@ -92,6 +92,10 @@ ________________________________________________________________________
     standard_options.add_argument("-i", "--index", metavar="PATH",
                         default = os.path.join(exe_path, "gtf.index"),
                         help="PATH to the index of all gtf files.")
+    standard_options.add_argument("--print_species", action = "store_true",
+                        help="Print list of indexed species and exit.")
+
+
     standard_options.add_argument("-s", "--species", metavar="NAME",
                       default = "Mus_musculus:60",
                       help="NAME and Ensembl version of species.\n"
@@ -100,13 +104,13 @@ ________________________________________________________________________
                       help="Tab-delimited file <CONTIG><START><END> in zero\n"
                            "based coordinates. Required for --intergenic,\n"
                            "--upstream,--downstream or --gene_territories")
-    standard_options.add_argument("--gene_types", metavar="PATH",
+    standard_options.add_argument("--gene_types", metavar="TYPES", action = 'append',
                       help="Comma separated list of valid gene types. All\n"
                             "other gene types will be ignored, e.g. for\n"
                             "the purposes of calculating gene territories.\n"
                             "E.g. 'protein_coding'. See --print_gene_types.")
     standard_options.add_argument('--print_gene_types', "-p", action="store_true",
-                                help="Print a list of valid gene types and exit\n")
+                                help="Print a list of valid gene types and exit")
 
 
     output_files = parser.add_argument_group('Output files')
@@ -121,6 +125,9 @@ ________________________________________________________________________
     output_files.add_argument("--coding_segments", metavar="PATH", nargs='?', const = "DEFAULT",
                       help="Coding regions with overlaps combined per gene.\n"
                            "(default= 'OUTPUT/coding_segments.loci')")
+    output_files.add_argument("--exonic_segments", metavar="PATH", nargs='?', const = "DEFAULT",
+                      help="Exonic regions with overlaps combined per gene.\n"
+                           "(default= 'OUTPUT/exonic_segments.loci')")
     output_files.add_argument("--upstream", metavar="PATH", nargs='?', const = "DEFAULT",
                       help="5' FLANK. (default= 'OUTPUT/upstream.loci')")
     output_files.add_argument("--downstream", metavar="PATH", nargs='?', const = "DEFAULT",
@@ -151,7 +158,7 @@ ________________________________________________________________________
     advanced_options.add_argument("--segment_identifier",
                                   metavar= "FORMAT",
                                   default = "{gene_id}:{chromosome}:{beg}-{end}:{strand}:{length}:{type}:{gene_type}",
-                                  help = "Last column for --coding_segments, --introns\n"
+                                  help = "Last column for --coding_segments, --exonic_segments, --introns\n"
                                          "Default= '{gene_id}:{chromosome}:{beg}-{end}:\n"
                                          "          {strand}:{length}:{type}:{gene_type}'.")
     advanced_options.add_argument("--gene_identifier",
@@ -182,6 +189,8 @@ ________________________________________________________________________
         options.coding_exons = os.path.join(options.output, "coding_exons.loci")
     if options.coding_segments == "DEFAULT":
         options.coding_segments = os.path.join(options.output, "coding_segments.loci")
+    if options.exonic_segments == "DEFAULT":
+        options.exonic_segments = os.path.join(options.output, "exonic_segments.loci")
     if options.genes == "DEFAULT":
         options.genes = os.path.join(options.output, "genes.loci")
     if options.exons == "DEFAULT":
@@ -403,6 +412,11 @@ def write_gene(file_handle, gene, beg, end, gene_identifier_format, interval_typ
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 if __name__ == '__main__':
 
+    if options.print_species:
+        for species in list_indexed_species(options.index):
+            print species
+        sys.exit()
+
 
     #
     #   get genes previously parsed by index_gtf_files.py
@@ -443,6 +457,7 @@ if __name__ == '__main__':
     open_files = dict()
     coding_exons_file           = open_file(options.coding_exons         , open_files)
     coding_segments_file        = open_file(options.coding_segments      , open_files)
+    exonic_segments_file        = open_file(options.exonic_segments      , open_files)
     genes_file                  = open_file(options.genes                , open_files)
     exons_file                  = open_file(options.exons                , open_files)
     introns_file                = open_file(options.introns              , open_files)
@@ -455,6 +470,7 @@ if __name__ == '__main__':
         logger.log(MESSAGE, "Using gene structures from %s..." % (gtf_file_name,))
         for option, name in ( (options.coding_exons    , "coding exons"),
                               (options.coding_segments , "combined coding segments"),
+                              (options.exonic_segments , "combined exonic segments"),
                               (options.genes           , "genes"),
                               (options.exons           , "exons incl. UTR"),
                               (options.introns         , "merged intronic segments"),
@@ -489,7 +505,7 @@ if __name__ == '__main__':
         valid_gene_types = genes.keys()
     else:
         import re
-        valid_gene_types = re.split("[,\s]+", options.gene_types)
+        valid_gene_types = set(re.split("[,\s]+", ",".join(options.gene_types)))
         if not len(options.gene_types):
             raise Exception("No valid gene types specified in --gene_types")
 
@@ -516,6 +532,8 @@ if __name__ == '__main__':
             # CHROM BEG END GENE_ID:CHROM:BEG:END:LENGTH
             write_virtual_exons(coding_segments_file, gene, gene.get_virtual_coding_exons(),
                                 segment_identifier_format, "CODING")
+            write_virtual_exons(exonic_segments_file, gene, gene.get_virtual_exons(),
+                                segment_identifier_format, "EXON")
             write_virtual_exons(introns_file, gene, gene.get_virtual_introns(),
                                 segment_identifier_format, "INTRON")
 

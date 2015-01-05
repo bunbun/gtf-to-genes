@@ -9,7 +9,7 @@ Example 2. Find overlaps with any particular gene:
 
             species_version = "Mus_musculus:58"
 
-            index_file = "/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index"
+            index_file = "/your/gtf/path/ftp.ensembl.org/gtf.index"
             from gtf_to_genes import *
             import logging
             logger = logging.getLogger("test")
@@ -24,6 +24,16 @@ Example 2. Find overlaps with any particular gene:
 2) Use quicksect to build an overlap/intersection dictionary
 =================================================================
     Enable fast lookups from loci to a particular gene.
+
+    Download quicksect:
+
+        ::
+
+            wget https://bitbucket.org/james_taylor/bx-python/raw/babadb4d4bf2d71e50a6f3569c10691ec9f3bc81/lib/bx/intervals/operations/quicksect.py
+
+            #or
+
+            sudo pip install bx-python --upgrade
 
     Coding / UTR go separately
 

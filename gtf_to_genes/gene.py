@@ -855,7 +855,7 @@ class t_parse_gtf(object):
                                             coding_frames,
                                             start_codons,
                                             stop_codons,
-                                            transcript_type)
+                                            t_transcript.transcript_type_names[t_transcript.unique_transcript_type_names[transcript_type_name]])
 
                 new_gene.add_transcript(transcript)
 

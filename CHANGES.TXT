@@ -1,7 +1,6 @@
 = v. 1.40=
     _04/December/2014_
     * Add intervals from_gtf.py to dump intervals from GTF files
-
 = v. 1.31=
     _20/November/2014_
     * Handles latest Ensembl GTF (version 74)
