@@ -52,15 +52,15 @@
   <div class="section" id="example-1-count-number-of-genes-with-no-start-or-stop-codon">
 <h1>Example 1. Count number of genes with no start or stop codon<a class="headerlink" href="#example-1-count-number-of-genes-with-no-start-or-stop-codon" title="Permalink to this headline">¶</a></h1>
 <blockquote>
-<div><p>Index <em>Homo sapiens</em> GTF file at <tt class="docutils literal"><span class="pre">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/&quot;</span></tt>
+<div><p>Index <em>Homo sapiens</em> GTF file at <tt class="docutils literal"><span class="pre">&quot;/your/gtf/path/ftp.ensembl.org/pub/release-77/gtf/homo_sapiens/&quot;</span></tt>
 (Change to your own location)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
 
-<span class="n">index_file</span>       <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index&quot;</span>
-<span class="n">search_path_root</span> <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org&quot;</span>
-<span class="n">search_path_root</span> <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/homo_sapiens/&quot;</span>
+<span class="n">index_file</span>       <span class="o">=</span> <span class="s">&quot;/your/gtf/path/ftp.ensembl.org/gtf.index&quot;</span>
+<span class="n">search_path_root</span> <span class="o">=</span> <span class="s">&quot;/your/gtf/path/ftp.ensembl.org&quot;</span>
+<span class="n">search_path_root</span> <span class="o">=</span> <span class="s">&quot;/your/gtf/path/ftp.ensembl.org/pub/release-77/gtf/homo_sapiens/&quot;</span>
 <span class="n">regex_input</span>          <span class="o">=</span> <span class="s">r&quot;(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$&quot;</span>
 
 <span class="c"># put cache file in same directory as GTF file</span>
@@ -73,7 +73,7 @@
 
 <span class="c">#</span>
 <span class="c"># Unique identifier per GTF file</span>
-<span class="c"># e.g. &quot;Anolis_carolinensis:56&quot;</span>
+<span class="c"># e.g. &quot;Anolis_carolinensis:77&quot;</span>
 <span class="c">#</span>
 <span class="n">identifier_pattern</span>   <span class="o">=</span> <span class="s">r&quot;\3:\4&quot;</span>
 
@@ -92,9 +92,9 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
 
-<span class="n">index_file</span>       <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index&quot;</span>
+<span class="n">index_file</span>       <span class="o">=</span> <span class="s">&quot;/your/gtf/path/ftp.ensembl.org/gtf.index&quot;</span>
 
-<span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Homo_sapiens:56&quot;</span><span class="p">)</span>
+<span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Homo_sapiens:77&quot;</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">species</span>
 <span class="k">if</span> <span class="n">genes</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">genes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -125,11 +125,10 @@
     <span class="n">cnt_no_start_codon</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">cnt_no_stop__codon</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">cnt_neither__codon</span> <span class="o">=</span> <span class="mi">0</span>
-
     <span class="c">#</span>
     <span class="c">#   iterate through each transcript</span>
     <span class="c">#</span>
-    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="p">:</span>
         <span class="n">cnt_transcript</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">start_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stop_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -138,21 +137,18 @@
                 <span class="n">cnt_no_start_codon</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stop_codons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">cnt_no_stop__codon</span> <span class="o">+=</span> <span class="mi">1</span>
-
     <span class="c">#</span>
     <span class="c">#   Save counts for this gene</span>
     <span class="c">#</span>
     <span class="n">cnt_no_start_codon_transcript</span> <span class="o">+=</span> <span class="n">cnt_no_start_codon</span>
     <span class="n">cnt_no_stop__codon_transcript</span> <span class="o">+=</span> <span class="n">cnt_no_stop__codon</span>
     <span class="n">cnt_neither__codon_transcript</span> <span class="o">+=</span> <span class="n">cnt_neither__codon</span>
-
     <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="k">else</span> <span class="mi">0</span>
     <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="k">else</span> <span class="mi">0</span>
     <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="k">else</span> <span class="mi">0</span>
-
-    <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_no_start_codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_start_codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_no_stop__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_no_stop__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">cnt_neither__codon_gene_any</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">cnt_neither__codon</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">transcripts</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
 
 
 <span class="c">#</span>
@@ -174,12 +170,29 @@
 </div>
 <p>Results:</p>
 <blockquote>
-<div>45.8% of transcripts have a missing stop or stop codon``(5993 + 9566 + 34401) / 109199.0``
+<div>55.1% of transcripts have a missing stop or stop codon``(232 + 229 + 83681) / 152637.0``
+74.1% of genes have at least 1 transcript with a missing stop or stop codon``16286 / 21983.0``</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre> 21983 genes
+152637 transcripts
+   232 transcripts with no start codon
+   229 transcripts with no stop codon
+ 83681 transcripts with no start or stop codon
+     0 genes with no start codon
+     0 genes with no stop codon
+     0 genes with no start or stop codon
+   207 genes with any transcript with no start codon
+   253 genes with any transcript with no stop codon
+ 16286 genes with any transcript with no start or stop codon
+</pre></div>
+</div>
+<p>These are the equivalent numbers for Ensembl v.53:</p>
+<blockquote>
+<div>45.8% of transcripts have a missing stop or stop codon``(5993 + 9776 + 34401) / 109199.0``
 47.0% of genes have at least 1 transcript with a missing stop or stop codon``11097 / 23621.0``</div></blockquote>
 <div class="highlight-python"><div class="highlight"><pre> 23621 genes
 109199 transcripts
   5993 transcripts with no start codon
-  9566 transcripts with no stop codon
+  9776 transcripts with no stop codon
  34401 transcripts with no start or stop codon
      0 genes with no start codon
      0 genes with no stop codon
@@ -242,7 +255,7 @@
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Leo Goodstadt.
+        &copy; Copyright 2014, Leo Goodstadt.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>

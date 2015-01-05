@@ -60,8 +60,15 @@ But once that is done, the genes and transcripts can be retrieved in seconds.</p
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="docutils">
-<dt>The following code retrieves all the cached genes for Ensembl v.56 gene build of the Pacific sea squirt:</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Ciona_savignyi:56&quot;</span><span class="p">)</span>
+<dt>The following code retrieves all the cached genes for Ensembl v.77 human gene build:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+<span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/path/to/your/gtf.index&quot;</span>
+<span class="n">species_id</span><span class="p">,</span> <span class="n">gtf_path</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
+                                                               <span class="s">&quot;Homo_sapiens:77&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd>
@@ -73,10 +80,21 @@ genes etc.:</div>
 </div>
 <blockquote>
 <div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">genes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-<span class="go">[&#39;pseudogene&#39;, &#39;snRNA&#39;, &#39;protein_coding&#39;, &#39;rRNA&#39;, &#39;miRNA&#39;, &#39;misc_RNA&#39;, &#39;snoRNA&#39;]</span>
+<span class="go">[&#39;unitary_pseudogene&#39;, &#39;rRNA&#39;, &#39;lincRNA&#39;, &#39;IG_C_pseudogene&#39;,</span>
+<span class="go">&#39;translated_processed_pseudogene&#39;, &#39;Mt_tRNA&#39;, &#39;antisense&#39;,</span>
+<span class="go">&#39;IG_V_gene&#39;, &#39;misc_RNA&#39;, &#39;polymorphic_pseudogene&#39;, &#39;known_ncrna&#39;,</span>
+<span class="go">&#39;IG_J_gene&#39;, &#39;TR_J_pseudogene&#39;, &#39;IG_J_pseudogene&#39;, &#39;TEC&#39;,</span>
+<span class="go">&#39;protein_coding&#39;, &#39;Mt_rRNA&#39;, &#39;TR_V_pseudogene&#39;,</span>
+<span class="go">&#39;3prime_overlapping_ncrna&#39;, &#39;TR_J_gene&#39;, &#39;TR_D_gene&#39;,</span>
+<span class="go">&#39;IG_V_pseudogene&#39;, &#39;pseudogene&#39;, &#39;snRNA&#39;, &#39;unprocessed_pseudogene&#39;,</span>
+<span class="go">&#39;TR_V_gene&#39;, &#39;transcribed_unprocessed_pseudogene&#39;, &#39;sense_intronic&#39;,</span>
+<span class="go">&#39;miRNA&#39;, &#39;translated_unprocessed_pseudogene&#39;, &#39;non_coding&#39;,</span>
+<span class="go">&#39;IG_C_gene&#39;, &#39;sense_overlapping&#39;, &#39;IG_D_gene&#39;, &#39;TR_C_gene&#39;,</span>
+<span class="go">&#39;processed_transcript&#39;, &#39;transcribed_processed_pseudogene&#39;,</span>
+<span class="go">&#39;transcribed_unitary_pseudogene&#39;, &#39;snoRNA&#39;, &#39;processed_pseudogene&#39;]</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;# of protein coding genes = &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes</span><span class="p">[</span><span class="s">&#39;protein_coding&#39;</span><span class="p">])</span>
-<span class="go"># of protein coding genes =  11604</span>
+<span class="go"># of protein coding genes =  21983</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -89,22 +107,26 @@ This includes all exons / coding exons of each gene, as well as its constituent 
 <blockquote>
 <div><p>Data for each gene is kept in a <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a>.</p>
 <p>Each <a class="reference internal" href="#t-gene-class"><em>t_gene</em></a> looks like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
-<span class="c">#   t_gene</span>
-<span class="c">#</span>
-<span class="p">{</span>
-    <span class="s">&#39;gene_id&#39;</span>       <span class="p">:</span> <span class="s">&#39;ENSG00000053438&#39;</span><span class="p">,</span>
-    <span class="s">&#39;gene_type&#39;</span>     <span class="p">:</span> <span class="s">&#39;protein_coding&#39;</span><span class="p">,</span>
-    <span class="s">&#39;contig&#39;</span>        <span class="p">:</span> <span class="s">&#39;20&#39;</span><span class="p">,</span>
-    <span class="s">&#39;beg&#39;</span>           <span class="p">:</span> <span class="mi">36149615</span><span class="p">,</span>
-    <span class="s">&#39;end&#39;</span>           <span class="p">:</span> <span class="mi">36152092</span><span class="p">,</span>
-    <span class="s">&#39;strand&#39;</span>        <span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-    <span class="s">&#39;names&#39;</span>         <span class="p">:</span> <span class="p">[</span><span class="s">&#39;NNAT&#39;</span><span class="p">],</span>
-    <span class="s">&#39;exons&#39;</span>         <span class="p">:</span> <span class="p">[(</span><span class="mi">36149615</span><span class="p">,</span> <span class="mi">36149805</span><span class="p">),</span> <span class="p">(</span><span class="mi">36149619</span><span class="p">,</span> <span class="mi">36149805</span><span class="p">),</span> <span class="p">(</span><span class="mi">36150758</span><span class="p">,</span> <span class="mi">36150840</span><span class="p">),</span> <span class="p">(</span><span class="mi">36151067</span><span class="p">,</span> <span class="mi">36152092</span><span class="p">)],</span>
-    <span class="s">&#39;coding_exons&#39;</span>  <span class="p">:</span> <span class="p">[(</span><span class="mi">36149732</span><span class="p">,</span> <span class="mi">36149805</span><span class="p">),</span> <span class="p">(</span><span class="mi">36150758</span><span class="p">,</span> <span class="mi">36150840</span><span class="p">),</span> <span class="p">(</span><span class="mi">36151067</span><span class="p">,</span> <span class="mi">36151158</span><span class="p">)],</span>
-    <span class="s">&#39;virtual_exons&#39;</span> <span class="p">:</span> <span class="p">[(</span><span class="mi">36149615</span><span class="p">,</span> <span class="mi">36149805</span><span class="p">),</span> <span class="p">(</span><span class="mi">36150758</span><span class="p">,</span> <span class="mi">36150840</span><span class="p">),</span> <span class="p">(</span><span class="mi">36151067</span><span class="p">,</span> <span class="mi">36152092</span><span class="p">)],</span>
-    <span class="s">&#39;transcripts&#39;</span>   <span class="p">:</span> <span class="p">[]</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre>#
+#   t_gene
+#
+{
+    &#39;gene_id&#39;              : &#39;ENSMUSG00000073565&#39;,
+    &#39;gene_type&#39;            : &#39;protein_coding&#39;,
+    &#39;genome_locus&#39;         : &#39;chr18:51117897-51304641 :+&#39;,
+    &#39;gene_source&#39;          : &#39;ensembl&#39;,
+    &#39;names&#39;                : [&#39;Prr16&#39;],
+    &#39;exons&#39;                : [(51117897, 51118089), (51302609, 51304641)],
+    &#39;coding_exons&#39;         : [(51117930, 51118089), (51302609, 51303365)],
+    &#39;exon_ids&#39;             : [&#39;ENSMUSE00000707417&#39;, &#39;ENSMUSE00000707416&#39;],
+    &#39;coding_exon_ids&#39;      : [&#39;ENSMUSE00000707417&#39;, &#39;ENSMUSE00000707416&#39;],
+    &#39;virtual_exons&#39;        : [(51117897, 51118089), (51302609, 51304641)],
+    &#39;virtual_coding_exons&#39; : [(51117930, 51118089), (51302609, 51303365)],
+    &#39;transcripts&#39;          : [],
+    &#39;contig&#39;               : &#39;18&#39;,
+    &#39;beg&#39;                  : 51117897,
+    &#39;end&#39;                  : 51304641,
+    &#39;strand&#39;               : True
 </pre></div>
 </div>
 <p>With the constituent <a class="reference internal" href="#t-transcript-class"><em>transcripts</em></a> looking like this:</p>
@@ -114,44 +136,27 @@ This includes all exons / coding exons of each gene, as well as its constituent 
 <span class="c">#   t_transcript  1</span>
 <span class="c">#</span>
 <span class="p">{</span>
-    <span class="s">&#39;gene&#39;</span>                        <span class="p">:</span> <span class="s">&#39;Back reference to &lt;t_gene&gt; object&#39;</span><span class="p">,</span>
-    <span class="s">&#39;cdna_id&#39;</span>                     <span class="p">:</span> <span class="s">&#39;ENST00000062104&#39;</span><span class="p">,</span>
-    <span class="s">&#39;prot_id&#39;</span>                     <span class="p">:</span> <span class="s">&#39;ENSP00000062104&#39;</span><span class="p">,</span>
-    <span class="s">&#39;beg&#39;</span>                         <span class="p">:</span> <span class="mi">36149615</span><span class="p">,</span>
-    <span class="s">&#39;end&#39;</span>                         <span class="p">:</span> <span class="mi">36152092</span><span class="p">,</span>
-    <span class="s">&#39;coding_beg&#39;</span>                  <span class="p">:</span> <span class="mi">36149732</span><span class="p">,</span>
-    <span class="s">&#39;coding_end&#39;</span>                  <span class="p">:</span> <span class="mi">36151158</span><span class="p">,</span>
-    <span class="s">&#39;names&#39;</span>                       <span class="p">:</span> <span class="p">[</span><span class="s">&#39;NNAT-001&#39;</span><span class="p">],</span>
-    <span class="s">&#39;exon_indices&#39;</span>                <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
-    <span class="s">&#39;coding_exon_indices&#39;</span>         <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
-    <span class="s">&#39;coding_frames&#39;</span>               <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
-    <span class="s">&#39;virtual_exon_indices&#39;</span>        <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
-    <span class="s">&#39;virtual_coding_exon_indices&#39;</span> <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
-    <span class="s">&#39;start_codons&#39;</span>                <span class="p">:</span> <span class="p">((</span><span class="mi">36149732</span><span class="p">,</span> <span class="mi">36149736</span><span class="p">),),</span>
-    <span class="s">&#39;stop_codons&#39;</span>                 <span class="p">:</span> <span class="p">((</span><span class="mi">36151157</span><span class="p">,</span> <span class="mi">36151161</span><span class="p">),)</span>
-<span class="p">},</span>
-</pre></div>
-</div>
-<p>Transcript 2:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
-<span class="c">#   t_transcript</span>
-<span class="c">#</span>
-<span class="p">{</span>
-    <span class="s">&#39;gene&#39;</span>                        <span class="p">:</span> <span class="s">&#39;Back reference to &lt;t_gene&gt; object&#39;</span><span class="p">,</span>
-    <span class="s">&#39;cdna_id&#39;</span>                     <span class="p">:</span> <span class="s">&#39;ENST00000346199&#39;</span><span class="p">,</span>
-    <span class="s">&#39;prot_id&#39;</span>                     <span class="p">:</span> <span class="s">&#39;ENSP00000335497&#39;</span><span class="p">,</span>
-    <span class="s">&#39;beg&#39;</span>                         <span class="p">:</span> <span class="mi">36149619</span><span class="p">,</span>
-    <span class="s">&#39;end&#39;</span>                         <span class="p">:</span> <span class="mi">36152092</span><span class="p">,</span>
-    <span class="s">&#39;coding_beg&#39;</span>                  <span class="p">:</span> <span class="mi">36149732</span><span class="p">,</span>
-    <span class="s">&#39;coding_end&#39;</span>                  <span class="p">:</span> <span class="mi">36151158</span><span class="p">,</span>
-    <span class="s">&#39;names&#39;</span>                       <span class="p">:</span> <span class="p">[</span><span class="s">&#39;NNAT-002&#39;</span><span class="p">],</span>
-    <span class="s">&#39;exon_indices&#39;</span>                <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
-    <span class="s">&#39;coding_exon_indices&#39;</span>         <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
+    <span class="s">&#39;cdna_id&#39;</span>                     <span class="p">:</span> <span class="s">&#39;ENSMUST00000116639&#39;</span><span class="p">,</span>
+    <span class="s">&#39;prot_id&#39;</span>                     <span class="p">:</span> <span class="s">&#39;ENSMUSP00000112338&#39;</span><span class="p">,</span>
+    <span class="s">&#39;gene&#39;</span>                        <span class="p">:</span> <span class="s">&#39;&lt;gene_id=ENSMUSG00000073565&gt;&#39;</span><span class="p">,</span>
+    <span class="s">&#39;names&#39;</span>                       <span class="p">:</span> <span class="p">[</span><span class="s">&#39;Prr16-201&#39;</span><span class="p">],</span>
+    <span class="s">&#39;cdna_source&#39;</span>                 <span class="p">:</span> <span class="s">&#39;ensembl&#39;</span><span class="p">,</span>
+    <span class="s">&#39;transcript_type&#39;</span>             <span class="p">:</span> <span class="s">&#39;protein_coding&#39;</span><span class="p">,</span>
+    <span class="s">&#39;beg&#39;</span>                         <span class="p">:</span> <span class="mi">51117897</span><span class="p">,</span>
+    <span class="s">&#39;end&#39;</span>                         <span class="p">:</span> <span class="mi">51304641</span><span class="p">,</span>
+    <span class="s">&#39;exons&#39;</span>                       <span class="p">:</span> <span class="p">[(</span><span class="mi">51117897</span><span class="p">,</span> <span class="mi">51118089</span><span class="p">),</span> <span class="p">(</span><span class="mi">51302609</span><span class="p">,</span> <span class="mi">51304641</span><span class="p">)],</span>
+    <span class="s">&#39;exon_ids&#39;</span>                    <span class="p">:</span> <span class="p">[</span><span class="s">&#39;ENSMUSE00000707417&#39;</span><span class="p">,</span> <span class="s">&#39;ENSMUSE00000707416&#39;</span><span class="p">],</span>
+    <span class="s">&#39;coding_beg&#39;</span>                  <span class="p">:</span> <span class="mi">51117930</span><span class="p">,</span>
+    <span class="s">&#39;coding_end&#39;</span>                  <span class="p">:</span> <span class="mi">51303365</span><span class="p">,</span>
+    <span class="s">&#39;coding_exons&#39;</span>                <span class="p">:</span> <span class="p">[(</span><span class="mi">51117930</span><span class="p">,</span> <span class="mi">51118089</span><span class="p">),</span> <span class="p">(</span><span class="mi">51302609</span><span class="p">,</span> <span class="mi">51303365</span><span class="p">)],</span>
+    <span class="s">&#39;coding_exon_ids&#39;</span>             <span class="p">:</span> <span class="p">[</span><span class="s">&#39;ENSMUSE00000707417&#39;</span><span class="p">,</span> <span class="s">&#39;ENSMUSE00000707416&#39;</span><span class="p">],</span>
+    <span class="s">&#39;start_codons&#39;</span>                <span class="p">:</span> <span class="p">((</span><span class="mi">51117930</span><span class="p">,</span> <span class="mi">51117933</span><span class="p">),),</span>
+    <span class="s">&#39;stop_codons&#39;</span>                 <span class="p">:</span> <span class="p">((</span><span class="mi">51303362</span><span class="p">,</span> <span class="mi">51303365</span><span class="p">),),</span>
     <span class="s">&#39;coding_frames&#39;</span>               <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
-    <span class="s">&#39;virtual_exon_indices&#39;</span>        <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
-    <span class="s">&#39;virtual_coding_exon_indices&#39;</span> <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
-    <span class="s">&#39;start_codons&#39;</span>                <span class="p">:</span> <span class="p">((</span><span class="mi">36149732</span><span class="p">,</span> <span class="mi">36149736</span><span class="p">),),</span>
-    <span class="s">&#39;stop_codons&#39;</span>                 <span class="p">:</span> <span class="p">((</span><span class="mi">36151157</span><span class="p">,</span> <span class="mi">36151161</span><span class="p">),)</span>
+    <span class="s">&#39;exon_indices&#39;</span>                <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+    <span class="s">&#39;coding_exon_indices&#39;</span>         <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+    <span class="s">&#39;virtual_exon_indices&#39;</span>        <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+    <span class="s">&#39;virtual_coding_exon_indices&#39;</span> <span class="p">:</span> <span class="n">array</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -167,33 +172,36 @@ across transcripts may nonetheless have different coding / transcript start / st
 To facilitate comparisons, each gene also contains a &#8220;virtual&#8221; list with overlapping adjacent exons merged.</p>
 <p>Let us look at human gene <tt class="docutils literal"><span class="pre">ENSG00000053438</span></tt> in Ensembl v.58:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Homo_sapiens:56&quot;</span><span class="p">)</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Homo_sapiens:77&quot;</span><span class="p">)</span>
 <span class="n">gi</span> <span class="o">=</span> <span class="n">index_genes_by_gene_id</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span>
 <span class="n">gene</span> <span class="o">=</span> <span class="n">gi</span><span class="p">[</span><span class="s">&#39;ENSG00000053438&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>It uses 4 different exons:</p>
+<p>It uses 5 different exons:</p>
 <blockquote>
 <div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">coding_exons</span>
-<span class="go">[(36149615, 36149805), (36149619, 36149805), (36150758, 36150840), (36151067, 36152092)]</span>
+<span class="go">[(37521331, 37521403), (37521331, 37521403), (37522357, 37522438), (37522666, 37522759), (37522666, 37522759)]</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Of these, only the third exon appears to be shared across the two transcripts:</p>
+<p>None of these are shared across the two transcripts</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exon_indices</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">exon_indices</span>
-<span class="go">array(&#39;H&#39;, [0, 2, 3]),</span>
-<span class="go">array(&#39;H&#39;, [1, 3]),</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">transcript</span> <span class="ow">in</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">transcript</span><span class="o">.</span><span class="n">exon_indices</span>
+<span class="gp">...</span>
+<span class="go">array(&#39;H&#39;, [0, 2, 4])</span>
+<span class="go">array(&#39;H&#39;, [1, 3])</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>However, <tt class="docutils literal"><span class="pre">exons[0]</span></tt> and <tt class="docutils literal"><span class="pre">exons[1]</span></tt> represent overlapping loci with different predicted transcription start sites.
-This is clear when we look at the <tt class="docutils literal"><span class="pre">virtual</span></tt> exon use (after merging overlaps):</p>
+<p>However, <tt class="docutils literal"><span class="pre">exons[0]</span></tt>, <tt class="docutils literal"><span class="pre">exons[1]</span></tt> and <tt class="docutils literal"><span class="pre">exons[3]</span></tt>, <tt class="docutils literal"><span class="pre">exons[4]</span></tt> represent overlapping exons
+with different predicted transcription start sites.
+This is clear when we look at the <tt class="docutils literal"><span class="pre">virtual</span></tt> (after merging overlaps) exons:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">virtual_exon_indices</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">virtual_exon_indices</span>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">transcript</span> <span class="ow">in</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">transcript</span><span class="o">.</span><span class="n">virtual_exon_indices</span>
+<span class="gp">...</span>
 <span class="go">array(&#39;H&#39;, [0, 1, 2])</span>
 <span class="go">array(&#39;H&#39;, [0,    2])</span>
 </pre></div>
@@ -247,7 +255,7 @@ The <tt class="docutils literal"><span class="pre">end</span></tt> position is a
 <dt id="gene_type">
 <tt class="descname">gene_type</tt><a class="headerlink" href="#gene_type" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">protein_coding</span></tt> etc</p>
-<p>Human genome includes: <tt class="docutils literal"><span class="pre">rRNA</span></tt>, <tt class="docutils literal"><span class="pre">protein_coding</span></tt>, <tt class="docutils literal"><span class="pre">snoRNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">snRNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">IG_V_gene</span></tt>, <tt class="docutils literal"><span class="pre">misc_RNA</span></tt>, <tt class="docutils literal"><span class="pre">misc_RNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">IG_J_gene</span></tt>, <tt class="docutils literal"><span class="pre">IG_C_gene</span></tt>, <tt class="docutils literal"><span class="pre">Mt_tRNA</span></tt>, <tt class="docutils literal"><span class="pre">Mt_rRNA</span></tt>, <tt class="docutils literal"><span class="pre">scRNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">snRNA</span></tt>, <tt class="docutils literal"><span class="pre">tRNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">rRNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">miRNA</span></tt>, <tt class="docutils literal"><span class="pre">IG_D_gene</span></tt>, <tt class="docutils literal"><span class="pre">processed_transcript</span></tt>, <tt class="docutils literal"><span class="pre">Mt_tRNA_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">snoRNA</span></tt>, <tt class="docutils literal"><span class="pre">miRNA_pseudogene</span></tt></p>
+<p>Human genome currently includes: <tt class="docutils literal"><span class="pre">unitary_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">rRNA</span></tt>, <tt class="docutils literal"><span class="pre">lincRNA</span></tt>, <tt class="docutils literal"><span class="pre">IG_C_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">translated_processed_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">Mt_tRNA</span></tt>, <tt class="docutils literal"><span class="pre">antisense</span></tt>, <tt class="docutils literal"><span class="pre">IG_V_gene</span></tt>, <tt class="docutils literal"><span class="pre">misc_RNA</span></tt>, <tt class="docutils literal"><span class="pre">polymorphic_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">known_ncrna</span></tt>, <tt class="docutils literal"><span class="pre">IG_J_gene</span></tt>, <tt class="docutils literal"><span class="pre">TR_J_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">IG_J_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">TEC</span></tt>, <tt class="docutils literal"><span class="pre">protein_coding</span></tt>, <tt class="docutils literal"><span class="pre">Mt_rRNA</span></tt>, <tt class="docutils literal"><span class="pre">TR_V_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">3prime_overlapping_ncrna</span></tt>, <tt class="docutils literal"><span class="pre">TR_J_gene</span></tt>, <tt class="docutils literal"><span class="pre">TR_D_gene</span></tt>, <tt class="docutils literal"><span class="pre">IG_V_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">snRNA</span></tt>, <tt class="docutils literal"><span class="pre">unprocessed_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">TR_V_gene</span></tt>, <tt class="docutils literal"><span class="pre">transcribed_unprocessed_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">sense_intronic</span></tt>, <tt class="docutils literal"><span class="pre">miRNA</span></tt>, <tt class="docutils literal"><span class="pre">translated_unprocessed_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">non_coding</span></tt>, <tt class="docutils literal"><span class="pre">IG_C_gene</span></tt>, <tt class="docutils literal"><span class="pre">sense_overlapping</span></tt>, <tt class="docutils literal"><span class="pre">IG_D_gene</span></tt>, <tt class="docutils literal"><span class="pre">TR_C_gene</span></tt>, <tt class="docutils literal"><span class="pre">processed_transcript</span></tt>, <tt class="docutils literal"><span class="pre">transcribed_processed_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">transcribed_unitary_pseudogene</span></tt>, <tt class="docutils literal"><span class="pre">snoRNA</span></tt>, <tt class="docutils literal"><span class="pre">processed_pseudogene</span></tt></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -278,6 +286,12 @@ The <tt class="docutils literal"><span class="pre">end</span></tt> position is a
 <dt id="names">
 <tt class="descname">names</tt><a class="headerlink" href="#names" title="Permalink to this definition">¶</a></dt>
 <dd><p>Comma separated name of gene names</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gene_source">
+<tt class="descname">gene_source</tt><a class="headerlink" href="#gene_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Which method was used to predict the gene. E.g. <tt class="docutils literal"><span class="pre">ensembl_havana</span></tt></p>
 </dd></dl>
 
 </div></blockquote>
@@ -326,6 +340,13 @@ For example, two transcripts may have overlapping first exons which differ by th
 <dd><p>Save data for gene to open file <tt class="docutils literal"><span class="pre">dump_file</span></tt></p>
 </dd></dl>
 
+<dl class="method">
+<dt id="get_genome_locus">
+<tt class="descname">get_genome_locus</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#get_genome_locus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return locus in the form of e.g. <tt class="docutils literal"><span class="pre">chr20:1234567-3456789</span> <span class="pre">+</span></tt>
+(Note the <tt class="docutils literal"><span class="pre">chr</span></tt> UCSC format)</p>
+</dd></dl>
+
 </div></blockquote>
 </div>
 <div class="section" id="t-transcript">
@@ -358,6 +379,17 @@ For example, two transcripts may have overlapping first exons which differ by th
 </dd></dl>
 
 <dl class="attribute">
+<dt id="transcript_type">
+<tt class="descname">transcript_type</tt><a class="headerlink" href="#transcript_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>index into list of transcript_types
+For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">transcript</span><span class="o">.</span><span class="n">transcript_type_names</span><span class="p">[</span><span class="n">transcript</span><span class="o">.</span><span class="n">transcript_type</span><span class="p">]</span>
+<span class="go">protein_coding</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
 <dt>
 <tt class="descname">beg</tt></dt>
 <dd><p>Genomic start coordinates</p>
@@ -379,6 +411,12 @@ For example, two transcripts may have overlapping first exons which differ by th
 <dt id="coding_end">
 <tt class="descname">coding_end</tt><a class="headerlink" href="#coding_end" title="Permalink to this definition">¶</a></dt>
 <dd><p>Genomic coding end coordinates</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cdna_source">
+<tt class="descname">cdna_source</tt><a class="headerlink" href="#cdna_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Which method was used to predict the gene. E.g. <tt class="docutils literal"><span class="pre">ensembl_havana</span></tt></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -439,6 +477,36 @@ For example, two transcripts may have overlapping first exons which differ by th
 <dt>
 <tt class="descname">dump</tt><big>(</big><em>self</em>, <em>dump_file</em><big>)</big></dt>
 <dd><p>Save data for gene to open file <tt class="docutils literal"><span class="pre">dump_file</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="get_coding_exons">
+<tt class="descname">get_coding_exons</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#get_coding_exons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of coding exon bounds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="get_coding_exon_ids">
+<tt class="descname">get_coding_exon_ids</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#get_coding_exon_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of coding exon identifiers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="get_exons">
+<tt class="descname">get_exons</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#get_exons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of exon bounds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="get_exon_ids">
+<tt class="descname">get_exon_ids</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#get_exon_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of coding exon identifiers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="get_transcript_type_name">
+<tt class="descname">get_transcript_type_name</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#get_transcript_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the transcript type, e.g. <tt class="docutils literal"><span class="pre">protein_coding</span></tt>, <tt class="docutils literal"><span class="pre">retained_intron</span></tt>, <tt class="docutils literal"><span class="pre">nonsense_mediated_decay</span></tt></p>
 </dd></dl>
 
 </div></blockquote>
@@ -580,6 +648,11 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 </tr>
 </tbody>
 </table>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cdna_by_cdna_id</span> <span class="o">=</span> <span class="n">index_transcripts</span><span class="p">(</span><span class="n">genes</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+<span class="n">prot_by_prot_id</span> <span class="o">=</span> <span class="n">index_transcripts</span><span class="p">(</span><span class="n">genes</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -607,12 +680,15 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 </div>
 <div class="section" id="examples">
 <h1>Examples:<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="to-index-entire-directory-tree">
-<h2>To index entire directory tree<a class="headerlink" href="#to-index-entire-directory-tree" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="to-index-entire-directory-tree-in-python">
+<h2>To index entire directory tree in python<a class="headerlink" href="#to-index-entire-directory-tree-in-python" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><p>To download the gtf files from an entire release of Ensembl:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd /data/mus/mirror
-./wget.py --url ftp.ensembl.org/pub/release-60/gtf/mus_musculus/Mus_musculus.NCBIM37.60.gtf.gz -vv
+<div class="highlight-python"><div class="highlight"><pre>cd /your/gtf/path
+wget --recursive --timestamping --server-response ftp://ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.78.gtf.gz
+
+# file is now here:
+# /your/gtf/path/ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.78.gtf.gz
 </pre></div>
 </div>
 <p>Index all downloaded GTF files</p>
@@ -621,14 +697,14 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
 
 <span class="c"># Index  file</span>
-<span class="n">index_file</span>       <span class="o">=</span> <span class="s">&quot;/data/mus/lg/data/ensembl/gtf.index&quot;</span>
+<span class="n">index_file</span>       <span class="o">=</span> <span class="s">&quot;/your/gtf/path/gtf.index&quot;</span>
 
 <span class="c"># look for GTF or gzipped GTF files</span>
 <span class="n">regex_input</span>          <span class="o">=</span> <span class="s">r&quot;(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$&quot;</span>
-<span class="n">search_path_root</span> <span class="o">=</span> <span class="s">&quot;/data/mus/mirror/ftp.ensembl.org/pub/release-60/gtf&quot;</span>
+<span class="n">search_path_root</span> <span class="o">=</span> <span class="s">&quot;/your/gtf/path&quot;</span>
 
-<span class="c"># put cache file in same directory as GTF file</span>
-<span class="n">cache_file_pattern</span>   <span class="o">=</span> <span class="s">r&quot;/data/mus/lg/data/ensembl/gtf_cache/release-60/\2.cache&quot;</span>
+<span class="c"># put cache file in same directory as GTF index file</span>
+<span class="n">cache_file_pattern</span>   <span class="o">=</span> <span class="s">r&quot;/your/gtf/path/\2.cache&quot;</span>
 
 <span class="c">#</span>
 <span class="c"># uncomment this line to put cache file in same directory index file</span>
@@ -637,7 +713,7 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 
 <span class="c">#</span>
 <span class="c"># Unique identifier per GTF file</span>
-<span class="c"># e.g. &quot;Anolis_carolinensis:56&quot;</span>
+<span class="c"># e.g. &quot;Anolis_carolinensis:77&quot;</span>
 <span class="c">#</span>
 <span class="n">identifier_pattern</span>   <span class="o">=</span> <span class="s">r&quot;\3:\4&quot;</span>
 
@@ -653,19 +729,30 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 </div>
 </div></blockquote>
 </div>
+<div class="section" id="to-index-entire-directory-tree-on-the-command-line">
+<h2>To index entire directory tree on the command line<a class="headerlink" href="#to-index-entire-directory-tree-on-the-command-line" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Download GTF file as above using <tt class="docutils literal"><span class="pre">wget</span></tt></p>
+<div class="highlight-python"><div class="highlight"><pre>../index_gtf_files.py -r /your/gtf/path --index /your/gtf/path/gtf.index -v -L index_gtf_files.log --ignore -v 5
+</pre></div>
+</div>
+</div></blockquote>
+</div>
 <div class="section" id="to-read-indexed-genes-from-a-particular-species">
 <h2>To read indexed genes from a particular species<a class="headerlink" href="#to-read-indexed-genes-from-a-particular-species" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
+<div><dl class="docutils">
+<dt>Let us read genes from the Pacific Sea Squirt:</dt>
+<dd><div class="first highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
 
-<span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/data/mus/lg/data/ensembl/gtf.index&quot;</span>
+<span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/your/gtf/path/gtf.index&quot;</span>
 <span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
 
-<span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Mus_musculus:60&quot;</span><span class="p">)</span>
+<span class="n">species</span><span class="p">,</span> <span class="n">gtf_file_name</span><span class="p">,</span> <span class="n">genes</span> <span class="o">=</span> <span class="n">get_indexed_genes_for_identifier</span><span class="p">(</span><span class="n">index_file</span><span class="p">,</span>  <span class="n">logger</span><span class="p">,</span>  <span class="s">&quot;Ciona_savignyi:56&quot;</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">species</span>
 <span class="k">if</span> <span class="n">genes</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">genes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -673,11 +760,13 @@ Objects other than <a class="reference internal" href="#t-transcript-class"><em>
 </pre></div>
 </div>
 <p>Produces:</p>
-<div class="highlight-python"><div class="highlight"><pre>Ciona_savignyi:56
+<div class="last highlight-python"><div class="highlight"><pre>Ciona_savignyi:56
 [&#39;pseudogene&#39;, &#39;snRNA&#39;, &#39;protein_coding&#39;, &#39;rRNA&#39;, &#39;miRNA&#39;, &#39;misc_RNA&#39;, &#39;snoRNA&#39;]
 # of protein coding genes =  11604
 </pre></div>
 </div>
+</dd>
+</dl>
 </div></blockquote>
 </div>
 <div class="section" id="to-read-indexed-genes-whose-species-match-a-regular-expression">
@@ -765,7 +854,8 @@ Ciona_savignyi:56             (11604 protein coding genes)
 </ul>
 </li>
 <li><a class="reference internal" href="#examples">Examples:</a><ul>
-<li><a class="reference internal" href="#to-index-entire-directory-tree">To index entire directory tree</a></li>
+<li><a class="reference internal" href="#to-index-entire-directory-tree-in-python">To index entire directory tree in python</a></li>
+<li><a class="reference internal" href="#to-index-entire-directory-tree-on-the-command-line">To index entire directory tree on the command line</a></li>
 <li><a class="reference internal" href="#to-read-indexed-genes-from-a-particular-species">To read indexed genes from a particular species</a></li>
 <li><a class="reference internal" href="#to-read-indexed-genes-whose-species-match-a-regular-expression">To read indexed genes whose species match a regular expression</a></li>
 </ul>
@@ -812,7 +902,7 @@ Ciona_savignyi:56             (11604 protein coding genes)
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Leo Goodstadt.
+        &copy; Copyright 2014, Leo Goodstadt.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>

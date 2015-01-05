@@ -8,30 +8,48 @@ Overview
     gtf_to_genes is a Python parser which caches all the genes / transcripts from a GTF file and
     caches the data into python classes for high speed access.
 
-    The initial parsing and indexing of a GTF file is a slow process, taking over a minute. 
+    The initial parsing and indexing of a GTF file is a slow process, taking over a minute.
     But once that is done, the genes and transcripts can be retrieved in seconds.
 
 ==================================================================================================
 Quick start
 ==================================================================================================
-    The following code retrieves all the cached genes for Ensembl v.56 gene build of the Pacific sea squirt:
+    The following code retrieves all the cached genes for Ensembl v.77 human gene build:
         ::
 
-            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Ciona_savignyi:56")
+            import sys
+            import os
+            from gtf_to_genes import *
+            import logging
+            logger = logging.getLogger("test")
+            index_file = "/path/to/your/gtf.index"
+            species_id, gtf_path, genes = get_indexed_genes_for_identifier(index_file, logger,
+                                                                           "Homo_sapiens:77")
 
     | ``species`` and ``gtf_file_name`` are useful in checking that we are looking at the right data.
-    | However ``genes`` is what we are interested in. These include not only protein coding but also rRNA and miRNA 
+    | However ``genes`` is what we are interested in. These include not only protein coding but also rRNA and miRNA
       genes etc.:
 
         ::
 
             >>> print genes.keys()
-            ['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']
-    
-            >>> print "# of protein coding genes = ", len(genes['protein_coding'])
-            # of protein coding genes =  11604
+            ['unitary_pseudogene', 'rRNA', 'lincRNA', 'IG_C_pseudogene',
+            'translated_processed_pseudogene', 'Mt_tRNA', 'antisense',
+            'IG_V_gene', 'misc_RNA', 'polymorphic_pseudogene', 'known_ncrna',
+            'IG_J_gene', 'TR_J_pseudogene', 'IG_J_pseudogene', 'TEC',
+            'protein_coding', 'Mt_rRNA', 'TR_V_pseudogene',
+            '3prime_overlapping_ncrna', 'TR_J_gene', 'TR_D_gene',
+            'IG_V_pseudogene', 'pseudogene', 'snRNA', 'unprocessed_pseudogene',
+            'TR_V_gene', 'transcribed_unprocessed_pseudogene', 'sense_intronic',
+            'miRNA', 'translated_unprocessed_pseudogene', 'non_coding',
+            'IG_C_gene', 'sense_overlapping', 'IG_D_gene', 'TR_C_gene',
+            'processed_transcript', 'transcribed_processed_pseudogene',
+            'transcribed_unitary_pseudogene', 'snoRNA', 'processed_pseudogene']
 
-    A list of :ref:`t_gene <t_gene_class>` objects is stored for each gene type (e.g. ``protein_coding``). 
+            >>> print "# of protein coding genes = ", len(genes['protein_coding'])
+            # of protein coding genes =  21983
+
+    A list of :ref:`t_gene <t_gene_class>` objects is stored for each gene type (e.g. ``protein_coding``).
     This includes all exons / coding exons of each gene, as well as its constituent transcripts.
 
 =========================================================
@@ -42,79 +60,66 @@ Quick start
 
     Each :ref:`t_gene <t_gene_class>` looks like this::
 
-        # 
+        #
         #   t_gene
         #
         {
-            'gene_id'       : 'ENSG00000053438',
-            'gene_type'     : 'protein_coding',
-            'contig'        : '20',
-            'beg'           : 36149615,
-            'end'           : 36152092,
-            'strand'        : True,
-            'names'         : ['NNAT'],
-            'exons'         : [(36149615, 36149805), (36149619, 36149805), (36150758, 36150840), (36151067, 36152092)],
-            'coding_exons'  : [(36149732, 36149805), (36150758, 36150840), (36151067, 36151158)],
-            'virtual_exons' : [(36149615, 36149805), (36150758, 36150840), (36151067, 36152092)],
-            'transcripts'   : []
-        }
+            'gene_id'              : 'ENSMUSG00000073565',
+            'gene_type'            : 'protein_coding',
+            'genome_locus'         : 'chr18:51117897-51304641 :+',
+            'gene_source'          : 'ensembl',
+            'names'                : ['Prr16'],
+            'exons'                : [(51117897, 51118089), (51302609, 51304641)],
+            'coding_exons'         : [(51117930, 51118089), (51302609, 51303365)],
+            'exon_ids'             : ['ENSMUSE00000707417', 'ENSMUSE00000707416'],
+            'coding_exon_ids'      : ['ENSMUSE00000707417', 'ENSMUSE00000707416'],
+            'virtual_exons'        : [(51117897, 51118089), (51302609, 51304641)],
+            'virtual_coding_exons' : [(51117930, 51118089), (51302609, 51303365)],
+            'transcripts'          : [],
+            'contig'               : '18',
+            'beg'                  : 51117897,
+            'end'                  : 51304641,
+            'strand'               : True
+
 
     With the constituent :ref:`transcripts <t_transcript_class>` looking like this:
 
-        Transcript 1: 
+        Transcript 1:
         ::
 
-                  # 
-                  #   t_transcript  1
-                  #
-                  {
-                      'gene'                        : 'Back reference to <t_gene> object',
-                      'cdna_id'                     : 'ENST00000062104',
-                      'prot_id'                     : 'ENSP00000062104',
-                      'beg'                         : 36149615,
-                      'end'                         : 36152092,
-                      'coding_beg'                  : 36149732,
-                      'coding_end'                  : 36151158,
-                      'names'                       : ['NNAT-001'],
-                      'exon_indices'                : array('H', [0, 2, 3]),
-                      'coding_exon_indices'         : array('H', [0, 1, 2]),
-                      'coding_frames'               : array('H', [0, 0, 0]),
-                      'virtual_exon_indices'        : array('H', [0, 1, 2]),
-                      'virtual_coding_exon_indices' : array('H', [0, 1, 2]),
-                      'start_codons'                : ((36149732, 36149736),),
-                      'stop_codons'                 : ((36151157, 36151161),)
-                  },
-
-        Transcript 2: 
-        ::
-
-                  # 
-                  #   t_transcript
-                  #
-                  {
-                      'gene'                        : 'Back reference to <t_gene> object',
-                      'cdna_id'                     : 'ENST00000346199',
-                      'prot_id'                     : 'ENSP00000335497',
-                      'beg'                         : 36149619,
-                      'end'                         : 36152092,
-                      'coding_beg'                  : 36149732,
-                      'coding_end'                  : 36151158,
-                      'names'                       : ['NNAT-002'],
-                      'exon_indices'                : array('H', [1, 3]),
-                      'coding_exon_indices'         : array('H', [0, 2]),
-                      'coding_frames'               : array('H', [0, 0]),
-                      'virtual_exon_indices'        : array('H', [0, 2]),
-                      'virtual_coding_exon_indices' : array('H', [0, 2]),
-                      'start_codons'                : ((36149732, 36149736),),
-                      'stop_codons'                 : ((36151157, 36151161),)
-                  }
+            #
+            #   t_transcript  1
+            #
+            {
+                'cdna_id'                     : 'ENSMUST00000116639',
+                'prot_id'                     : 'ENSMUSP00000112338',
+                'gene'                        : '<gene_id=ENSMUSG00000073565>',
+                'names'                       : ['Prr16-201'],
+                'cdna_source'                 : 'ensembl',
+                'transcript_type'             : 'protein_coding',
+                'beg'                         : 51117897,
+                'end'                         : 51304641,
+                'exons'                       : [(51117897, 51118089), (51302609, 51304641)],
+                'exon_ids'                    : ['ENSMUSE00000707417', 'ENSMUSE00000707416'],
+                'coding_beg'                  : 51117930,
+                'coding_end'                  : 51303365,
+                'coding_exons'                : [(51117930, 51118089), (51302609, 51303365)],
+                'coding_exon_ids'             : ['ENSMUSE00000707417', 'ENSMUSE00000707416'],
+                'start_codons'                : ((51117930, 51117933),),
+                'stop_codons'                 : ((51303362, 51303365),),
+                'coding_frames'               : array('H', [0, 0]),
+                'exon_indices'                : array('H', [0, 1]),
+                'coding_exon_indices'         : array('H', [0, 1]),
+                'virtual_exon_indices'        : array('H', [0, 1]),
+                'virtual_coding_exon_indices' : array('H', [0, 1])
+            }
 
 
 =========================================================
     Exons
 =========================================================
     Exon use for each transcript are stored by reference to the exon lists in its parent gene.
-    This is both for efficiency and for ease of comparison. Exons that are actually shared 
+    This is both for efficiency and for ease of comparison. Exons that are actually shared
     across transcripts may nonetheless have different coding / transcript start / stop sites.
     To facilitate comparisons, each gene also contains a "virtual" list with overlapping adjacent exons merged.
 
@@ -122,35 +127,39 @@ Quick start
 
         ::
 
-            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Homo_sapiens:56")
+            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Homo_sapiens:77")
             gi = index_genes_by_gene_id(genes)
             gene = gi['ENSG00000053438']
 
-    It uses 4 different exons:
+    It uses 5 different exons:
 
         ::
 
             >>> print gene.coding_exons
-            [(36149615, 36149805), (36149619, 36149805), (36150758, 36150840), (36151067, 36152092)]
+            [(37521331, 37521403), (37521331, 37521403), (37522357, 37522438), (37522666, 37522759), (37522666, 37522759)]
 
-    Of these, only the third exon appears to be shared across the two transcripts:
-
-        ::
-    
-            >>> print gene.transcripts[0].exon_indices
-            >>> print gene.transcripts[1].exon_indices
-            array('H', [0, 2, 3]),
-            array('H', [1, 3]),
-
-    However, ``exons[0]`` and ``exons[1]`` represent overlapping loci with different predicted transcription start sites.
-    This is clear when we look at the ``virtual`` exon use (after merging overlaps):
+    None of these are shared across the two transcripts
 
         ::
-    
-            >>> print gene.transcripts[0].virtual_exon_indices
-            >>> print gene.transcripts[1].virtual_exon_indices
+
+            >>> for transcript in gene.transcripts:
+            ...     print transcript.exon_indices
+            ...
+            array('H', [0, 2, 4])
+            array('H', [1, 3])
+
+    However, ``exons[0]``, ``exons[1]`` and ``exons[3]``, ``exons[4]`` represent overlapping exons
+    with different predicted transcription start sites.
+    This is clear when we look at the ``virtual`` (after merging overlaps) exons:
+
+        ::
+
+            >>> for transcript in gene.transcripts:
+            ...     print transcript.virtual_exon_indices
+            ...
             array('H', [0, 1, 2])
             array('H', [0,    2])
+
 
     Only the middle exon is actually alternatively spliced.
 
@@ -203,7 +212,7 @@ t_gene
 
                     ``protein_coding`` etc
 
-                    Human genome includes: ``rRNA``, ``protein_coding``, ``snoRNA_pseudogene``, ``snRNA_pseudogene``, ``IG_V_gene``, ``misc_RNA``, ``misc_RNA_pseudogene``, ``IG_J_gene``, ``IG_C_gene``, ``Mt_tRNA``, ``Mt_rRNA``, ``scRNA_pseudogene``, ``pseudogene``, ``snRNA``, ``tRNA_pseudogene``, ``rRNA_pseudogene``, ``miRNA``, ``IG_D_gene``, ``processed_transcript``, ``Mt_tRNA_pseudogene``, ``snoRNA``, ``miRNA_pseudogene``
+                    Human genome currently includes: ``unitary_pseudogene``, ``rRNA``, ``lincRNA``, ``IG_C_pseudogene``, ``translated_processed_pseudogene``, ``Mt_tRNA``, ``antisense``, ``IG_V_gene``, ``misc_RNA``, ``polymorphic_pseudogene``, ``known_ncrna``, ``IG_J_gene``, ``TR_J_pseudogene``, ``IG_J_pseudogene``, ``TEC``, ``protein_coding``, ``Mt_rRNA``, ``TR_V_pseudogene``, ``3prime_overlapping_ncrna``, ``TR_J_gene``, ``TR_D_gene``, ``IG_V_pseudogene``, ``pseudogene``, ``snRNA``, ``unprocessed_pseudogene``, ``TR_V_gene``, ``transcribed_unprocessed_pseudogene``, ``sense_intronic``, ``miRNA``, ``translated_unprocessed_pseudogene``, ``non_coding``, ``IG_C_gene``, ``sense_overlapping``, ``IG_D_gene``, ``TR_C_gene``, ``processed_transcript``, ``transcribed_processed_pseudogene``, ``transcribed_unitary_pseudogene``, ``snoRNA``, ``processed_pseudogene``
 
     .. attribute::  contig
 
@@ -220,13 +229,16 @@ t_gene
     .. attribute::  names
 
                     Comma separated name of gene names
+    .. attribute::  gene_source
+
+                    Which method was used to predict the gene. E.g. ``ensembl_havana``
 
 .. _t_gene.exons:
 
     .. attribute::  exons
 
                     List of begins/ends of all exons used by transcripts. Note that some of these exons may overlap.
-                    
+
 .. _t_gene.coding_exons:
 
     .. attribute::  coding_exons
@@ -237,14 +249,14 @@ t_gene
 
     .. attribute::  virtual_exons
 
-                    List of begins/ends of loci from :ref:`t_gene.exons <t_gene.exons>` with overlaps merged together. 
-                    These are useful for looking at transcript exon usage. 
+                    List of begins/ends of loci from :ref:`t_gene.exons <t_gene.exons>` with overlaps merged together.
+                    These are useful for looking at transcript exon usage.
                     For example, two transcripts may have overlapping first exons which differ by the length of the
                     5' UTR. These will have two separate entries in :ref:`t_gene.exons <t_gene.exons>` but will map to the same
                     "virtual exon" because they overlap.
     .. attribute::  transcripts
 
-                    List of :ref:`t_transcript <t_transcript_class>` 
+                    List of :ref:`t_transcript <t_transcript_class>`
 
     .. staticmethod:: load(data_file)
 
@@ -255,6 +267,10 @@ t_gene
 
         Save data for gene to open file ``dump_file``
 
+    .. method:: get_genome_locus(self)
+
+        Return locus in the form of e.g. ``chr20:1234567-3456789 +``
+        (Note the ``chr`` UCSC format)
 
 ==================================================================================================
 t_transcript
@@ -268,7 +284,7 @@ t_transcript
 
     .. attribute::  gene
 
-                    Link to parent :ref:`gene <t_gene_class>` 
+                    Link to parent :ref:`gene <t_gene_class>`
 
 .. _t_transcript.cdna_id:
 
@@ -281,6 +297,14 @@ t_transcript
     .. attribute::  prot_id
 
                     Ensembl Translation identifiers (e.g. ``ENSP0000000004547``)
+    .. attribute::  transcript_type
+
+                    index into list of transcript_types
+                    For example::
+
+                        >>> transcript.transcript_type_names[transcript.transcript_type]
+                        protein_coding
+
     .. attribute::  beg
 
                     Genomic start coordinates
@@ -294,6 +318,9 @@ t_transcript
 
                     Genomic coding end coordinates
 
+    .. attribute::  cdna_source
+
+                    Which method was used to predict the gene. E.g. ``ensembl_havana``
     .. attribute::  names
 
                     Comma separated name of transcript names
@@ -328,19 +355,38 @@ t_transcript
 
         Save data for gene to open file ``dump_file``
 
+    .. method:: get_coding_exons(self)
+
+        Returns list of coding exon bounds
+
+    .. method:: get_coding_exon_ids(self)
+
+        Returns list of coding exon identifiers
+
+    .. method:: get_exons(self)
+
+        Returns list of exon bounds
+
+    .. method:: get_exon_ids(self)
+
+        Returns list of coding exon identifiers
+
+    .. method:: get_transcript_type_name(self)
+
+        Returns the name of the transcript type, e.g. ``protein_coding``, ``retained_intron``, ``nonsense_mediated_decay``
 
 
 #########################################################
 Function Reference
 #########################################################
-=========================================================    
+=========================================================
 Indexing entire nested directory containing GTF files
 =========================================================
 .. function:: index_gtf_files(index_file, search_path_root, regex_input, cache_file_pattern, identifier_pattern)
 
     Iterate through a directory, looking for all GTF files matching a regular expression.
     Cache the GTF data to a file and write the location of the file to an index file
-    
+
     :param index_file: Index file to hold list of parsed GTF files
     :param search_path_root: Root directory to start scanning for GTF files
     :param regex_input: Regular expression to match GTF or gzipped GTF files.
@@ -353,7 +399,7 @@ Indexing entire nested directory containing GTF files
     :param identifier_pattern: Pattern used to constuct the (e.g. species) identifier for this GTF file
                        E.g. ``r"\1:\2" might give "homo_sapiens:47"``
 
-=========================================================    
+=========================================================
 Genes for matching species
 =========================================================
 
@@ -365,7 +411,7 @@ Get genes for specified species
     Get gene structures contained in a GTF file whose file name matches ``identifier``
 
     Returns None,None,None if no identifier matches
-    
+
     :param index_file_name: path to index file created by ``index_gtf_files(...)``
     :type index_file_name: string
     :param identifier: identifier parsed from the GTF file name by ``index_gtf_files(...)``
@@ -389,7 +435,7 @@ Get genes for all species which match
     :param index_file_name: path to index file created by ``index_gtf_files(...)``
     :type index_file_name: string
     :param regex_str: regular expression used to match identifiers parsed from the GTF file name by ``index_gtf_files(...)``
-    :type regex_str: string 
+    :type regex_str: string
     :rtype: list of tuples of (``<matching identifier>``, ``<original GTF path>``, ``<dictionary of lists of genes>``)
 
 .. function:: get_indexed_genes_matching_gtf_file_name(index_file_name, logger, regex_str)
@@ -399,7 +445,7 @@ Get genes for all species which match
     :param index_file_name: path to index file created by ``index_gtf_files(...)``
     :type index_file_name: string
     :param regex_str: regular expression used to match GTF file name by ``index_gtf_files(...)``
-    :type regex_str: string 
+    :type regex_str: string
     :rtype: list of tuples of (``<matching identifier>``, ``<original GTF path>``, ``<dictionary of lists of genes>``)
 
 
@@ -412,8 +458,8 @@ Indexing genes / transcripts by identifier
 
     Return a dictionary of transcripts indexed by either prot_id or cdna_id
 
-    Recurses into a dictionary or list of genes or transcripts to find each 
-    :ref:`t_transcript <t_transcript_class>`. Thus the ``genes`` returned by the GTF cache functions 
+    Recurses into a dictionary or list of genes or transcripts to find each
+    :ref:`t_transcript <t_transcript_class>`. Thus the ``genes`` returned by the GTF cache functions
     (dictionaries of lists of genes) will be handled correctly.
     Objects other than :ref:`t_transcript <t_transcript_class>` or :ref:`t_gene <t_gene_class>` are otherwise ignored.
 
@@ -422,12 +468,19 @@ Indexing genes / transcripts by identifier
     :type by_prot_id: boolean
     :rtype: ``dict`` of :ref:`t_transcript <t_transcript_class>` indexed by :ref:`t_transcript.prot_id <t_transcript.prot_id>` or :ref:`t_transcript.cdna_id <t_transcript.cdna_id>`
 
+    For example:
+    ::
+
+        cdna_by_cdna_id = index_transcripts(genes, False)
+        prot_by_prot_id = index_transcripts(genes, True)
+
+
 .. function:: index_genes_by_gene_id(item)
 
-    Return a dictionary of genes indexed by either :ref:`t_gene.gene_id <t_gene.gene_id>` 
+    Return a dictionary of genes indexed by either :ref:`t_gene.gene_id <t_gene.gene_id>`
 
-    Recurses into a dictionary or list of genes to find each 
-    :ref:`t_gene <t_gene_class>`. Thus the ``genes`` returned by the GTF cache functions 
+    Recurses into a dictionary or list of genes to find each
+    :ref:`t_gene <t_gene_class>`. Thus the ``genes`` returned by the GTF cache functions
     (dictionaries of lists of genes) will be
     handled correctly.
     Objects other than :ref:`t_transcript <t_transcript_class>` or :ref:`t_gene <t_gene_class>` are otherwise ignored.
@@ -443,16 +496,19 @@ Indexing genes / transcripts by identifier
 ##################################################################################
 
 =========================================================
-    To index entire directory tree
-=========================================================            
+    To index entire directory tree in python
+=========================================================
     To download the gtf files from an entire release of Ensembl:
 
     ::
 
-        cd /data/mus/mirror
-        ./wget.py --url ftp.ensembl.org/pub/release-60/gtf/mus_musculus/Mus_musculus.NCBIM37.60.gtf.gz -vv
+        cd /your/gtf/path
+        wget --recursive --timestamping --server-response ftp://ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.78.gtf.gz
 
-    
+        # file is now here:
+        # /your/gtf/path/ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.78.gtf.gz
+
+
     Index all downloaded GTF files
 
     ::
@@ -462,23 +518,23 @@ Indexing genes / transcripts by identifier
         logger = logging.getLogger("test")
 
         # Index  file
-        index_file       = "/data/mus/lg/data/ensembl/gtf.index"
+        index_file       = "/your/gtf/path/gtf.index"
 
         # look for GTF or gzipped GTF files
         regex_input          = r"(.+\/)(([^.]+)\..+\.(.+)\.gtf(?:\.gz)?)$"
-        search_path_root = "/data/mus/mirror/ftp.ensembl.org/pub/release-60/gtf"
+        search_path_root = "/your/gtf/path"
 
-        # put cache file in same directory as GTF file
-        cache_file_pattern   = r"/data/mus/lg/data/ensembl/gtf_cache/release-60/\2.cache"
+        # put cache file in same directory as GTF index file
+        cache_file_pattern   = r"/your/gtf/path/\2.cache"
 
-        # 
+        #
         # uncomment this line to put cache file in same directory index file
         #
         #cache_file_pattern   = r"{INDEX_FILE_PATH}/\2.cache"
 
         #
         # Unique identifier per GTF file
-        # e.g. "Anolis_carolinensis:56"
+        # e.g. "Anolis_carolinensis:77"
         #
         identifier_pattern   = r"\3:\4"
 
@@ -492,21 +548,31 @@ Indexing genes / transcripts by identifier
                         logger)
 
 =========================================================
-    To read indexed genes from a particular species
-=========================================================            
+    To index entire directory tree on the command line
+=========================================================
 
+    Download GTF file as above using ``wget``
+    ::
+
+        ../index_gtf_files.py -r /your/gtf/path --index /your/gtf/path/gtf.index -v -L index_gtf_files.log --ignore -v 5
+
+=========================================================
+    To read indexed genes from a particular species
+=========================================================
+
+    Let us read genes from the Pacific Sea Squirt:
         ::
 
             from gtf_to_genes import *
             import logging
             logger = logging.getLogger("test")
 
-            index_file = "/data/mus/lg/data/ensembl/gtf.index"
+            index_file = "/your/gtf/path/gtf.index"
             from gtf_to_genes import *
             import logging
             logger = logging.getLogger("test")
-            
-            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Mus_musculus:60")
+
+            species, gtf_file_name, genes = get_indexed_genes_for_identifier(index_file,  logger,  "Ciona_savignyi:56")
             print species
             if genes:
                 print genes.keys()
@@ -517,17 +583,17 @@ Indexing genes / transcripts by identifier
             Ciona_savignyi:56
             ['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']
             # of protein coding genes =  11604
-            
+
 =====================================================================
     To read indexed genes whose species match a regular expression
 =====================================================================
         ::
-    
+
             index_file = "/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index"
             from gtf_to_genes import *
             import logging
             logger = logging.getLogger("test")
-            
+
             genes_with_identifiers  = get_indexed_genes_matching_identifier(index_file,  logger,  "Ciona")
             #genes_with_identifiers = get_indexed_genes_matching_gtf_file_name(index_file, logger, "Ciona")
             for id, file_path, genes in genes_with_identifiers:
@@ -539,7 +605,7 @@ Indexing genes / transcripts by identifier
             Ciona_intestinalis:56         (14180 protein coding genes)
             /net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/ciona_intestinalis/Ciona_intestinalis.JGI2.56.gtf.gz
             ['rRNA', 'snRNA', 'protein_coding', 'miRNA', 'misc_RNA', 'snoRNA']
-            
+
             Ciona_savignyi:56             (11604 protein coding genes)
             /net/cpp-mirror/databases/ftp.ensembl.org/pub/release-56/gtf/ciona_savignyi/Ciona_savignyi.CSAV2.0.56.gtf.gz
             ['pseudogene', 'snRNA', 'protein_coding', 'rRNA', 'miRNA', 'misc_RNA', 'snoRNA']

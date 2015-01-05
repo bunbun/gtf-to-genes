@@ -52,7 +52,7 @@
 <blockquote>
 <div><div class="highlight-python"><div class="highlight"><pre><span class="n">species_version</span> <span class="o">=</span> <span class="s">&quot;Mus_musculus:58&quot;</span>
 
-<span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/net/cpp-mirror/databases/ftp.ensembl.org/gtf.index&quot;</span>
+<span class="n">index_file</span> <span class="o">=</span> <span class="s">&quot;/your/gtf/path/ftp.ensembl.org/gtf.index&quot;</span>
 <span class="kn">from</span> <span class="nn">gtf_to_genes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
@@ -70,6 +70,16 @@
 <h2>2) Use quicksect to build an overlap/intersection dictionary<a class="headerlink" href="#use-quicksect-to-build-an-overlap-intersection-dictionary" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><p>Enable fast lookups from loci to a particular gene.</p>
+<p>Download quicksect:</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>wget https://bitbucket.org/james_taylor/bx-python/raw/babadb4d4bf2d71e50a6f3569c10691ec9f3bc81/lib/bx/intervals/operations/quicksect.py
+
+#or
+
+sudo pip install bx-python --upgrade
+</pre></div>
+</div>
+</div></blockquote>
 <p>Coding / UTR go separately</p>
 <blockquote>
 <div><div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quicksect</span> <span class="kn">import</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">IntervalNode</span><span class="p">,</span> <span class="n">IntervalTree</span>
@@ -306,7 +316,7 @@
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Leo Goodstadt.
+        &copy; Copyright 2014, Leo Goodstadt.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
