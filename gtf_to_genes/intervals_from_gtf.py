@@ -497,9 +497,9 @@ if __name__ == '__main__':
     genic_intervals_per_contig = defaultdict(t_intervals)
 
     # how exons / segments are described
-    exon_identifier_format = "{chromosome}\t{beg}\t{end}\t%s\n" % options.exon_identifier
-    segment_identifier_format = "{chromosome}\t{beg}\t{end}\t%s\n" % options.segment_identifier
-    gene_identifier_format = "{chromosome}\t{beg}\t{end}\t%s\n" % options.gene_identifier
+    exon_identifier_format    = ("{chromosome}\t{beg}\t{end}\t%s\n" % options.exon_identifier   ).decode("string_escape")
+    segment_identifier_format = ("{chromosome}\t{beg}\t{end}\t%s\n" % options.segment_identifier).decode("string_escape")
+    gene_identifier_format    = ("{chromosome}\t{beg}\t{end}\t%s\n" % options.gene_identifier   ).decode("string_escape")
 
     if options.gene_types is None or not len(options.gene_types):
         valid_gene_types = genes.keys()
@@ -519,23 +519,23 @@ if __name__ == '__main__':
             if genes_file:
                 # CHROM BEG END GENE_ID
                 write_gene(genes_file, gene, gene.beg, gene.end,
-                           gene_identifier_format, "GENE")
+                           gene_identifier_format, "gene")
                 genic_intervals_per_contig[gene.contig].append((gene.beg, gene.end, gene))
 
 
             # (overlapping) coding exons / exon + UTR
             # CHROM BEG END GENE_ID:EXON_ID:CHROM:BEG:END:LENGTH
-            write_exons(exons_file, gene, gene.get_exons(), exon_identifier_format, "EXON")
-            write_exons(coding_exons_file, gene, gene.get_coding_exons(), exon_identifier_format, "CODING")
+            write_exons(exons_file, gene, gene.get_exons(), exon_identifier_format, "exon")
+            write_exons(coding_exons_file, gene, gene.get_coding_exons(), exon_identifier_format, "coding_exon")
 
             # (combined) coding exonic / intronic regions per gene
             # CHROM BEG END GENE_ID:CHROM:BEG:END:LENGTH
             write_virtual_exons(coding_segments_file, gene, gene.get_virtual_coding_exons(),
-                                segment_identifier_format, "CODING")
+                                segment_identifier_format, "CDS")
             write_virtual_exons(exonic_segments_file, gene, gene.get_virtual_exons(),
-                                segment_identifier_format, "EXON")
+                                segment_identifier_format, "exonic")
             write_virtual_exons(introns_file, gene, gene.get_virtual_introns(),
-                                segment_identifier_format, "INTRON")
+                                segment_identifier_format, "intronic")
 
 
             if gene.contig in contig_extents:
@@ -551,23 +551,23 @@ if __name__ == '__main__':
                     write_gene(upstream_file, gene,
                                min((gene.beg, max((contig_beg, gene.beg - options.flanking_size)))),
                                gene.beg,
-                               gene_identifier_format, "GENE")
+                               gene_identifier_format, "5flank")
                 if downstream_file  :
                     write_gene(downstream_file, gene,
                                gene.end,
                                max((gene.end, min((contig_end, gene.end + options.flanking_size)))),
-                               gene_identifier_format, "GENE")
+                               gene_identifier_format, "3flank")
             else:
                 if downstream_file  :
                     write_gene(downstream_file, gene,
                                min([gene.beg, max([contig_beg, gene.beg - options.flanking_size])]),
                                gene.beg,
-                               gene_identifier_format, "GENE")
+                               gene_identifier_format, "3flank")
                 if upstream_file    :
                     write_gene(upstream_file, gene,
                                gene.end,
                                max((gene.end, min((contig_end, gene.end + options.flanking_size)))),
-                               gene_identifier_format, "GENE")
+                               gene_identifier_format, "5flank")
 
 
 
@@ -588,7 +588,17 @@ if __name__ == '__main__':
             if intergenic_file:
                 intergenic_regions = genic_intervals_per_contig[contig].complemented(contig_beg, contig_end).combine_overlapping().remove_empty()
                 for beg, end in intergenic_regions.data:
-                    intergenic_file.write("{contig}\t{beg}\t{end}\n".format(beg = beg, end = end, contig=contig))
+                    file_handle.write(segment_identifier.format(chromosome=contig,
+                                                                   beg = beg + zero_based_coord,
+                                                                   end = end,
+                                                                   length = end - beg,
+                                                                   gene_id = "",
+                                                                   gene_type = "",
+                                                                   strand  = "+",
+                                                                   type="intergenic"))
+
+
+                    intergenic_file.write("{contig}\t{beg}\t{end}\t\n".format(beg = beg, end = end, contig=contig))
 
             # gene territories
             if gene_territories_file:

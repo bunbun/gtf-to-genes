@@ -596,7 +596,8 @@ class t_transcript(object):
     #   get_transcript_type_name
     #_____________________________________________________________________________________
     def get_transcript_type_name (self):
-        return t_transcript.transcript_type_names[self.transcript_type]
+        #return t_transcript.transcript_type_names[self.transcript_type]
+        return self.transcript_type
 
 
     #_____________________________________________________________________________________
@@ -900,8 +901,9 @@ class t_parse_gtf(object):
 
 
         except:
-            print g
-            raise
+            #print g
+            #raise
+            pass
 
 
 
