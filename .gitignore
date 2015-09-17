@@ -1,0 +1,8 @@
+# Compiled source #
+###################
+doc/build/*
+build
+dist
+*.pyc
+gtf_to_genes.egg-info
+MANIFEST
