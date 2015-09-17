@@ -250,6 +250,34 @@ def get_indexed_genes_for_identifier(index_file_name, logger, identifier):
 
 #_________________________________________________________________________________________
 #
+#    get_indexed_gene_types
+#_________________________________________________________________________________________
+def get_indexed_gene_types_for_identifier(index_file_name, logger, identifier):
+    """
+    Get gene structures contained in a GTF file whose file name matches identifier
+
+    :param index_file_name: path to index file created by ``index_gtf_files(...)``
+    :type index_file_name: string
+    :param identifier: identifier parsed from the GTF file name by ``index_gtf_files(...)``
+    :type identifier: string
+    :rtype tuple of (<matching identifier>, <original GTF path>, <dictionary of lists of genes>)
+    """
+    index_data = sorted(_read_index_file(index_file_name),  reverse = True)
+    all_ids = []
+    # go through in reverse order of id2 so that higher version numbers are retrieved first
+    for id, original_gtf_path, gtf_cache_path in index_data:
+        all_ids.append(id)
+        if id == identifier or id == identifier.replace(' ', '_'):
+            gene_structures = gene.t_parse_gtf(id)
+            logger.info("Get indexed genes for %s from %s" % (id, original_gtf_path))
+            return (id, original_gtf_path, gene_structures.get_gene_types(original_gtf_path, gtf_cache_path,
+                                                            logger))
+    logger.info("Identifier %s was not found in the index file %s" %
+                        (identifier, index_file_name))
+    return (None, all_ids, None)
+
+#_________________________________________________________________________________________
+#
 #    get_indexed_genes
 #_________________________________________________________________________________________
 def get_indexed_genes_matching_identifier(index_file_name, logger, regex_str):
@@ -279,6 +307,43 @@ def get_indexed_genes_matching_identifier(index_file_name, logger, regex_str):
                             (id, original_gtf_path))
         results.append((id, original_gtf_path,
                         gene_structures.get_genes(original_gtf_path, gtf_cache_path,
+                                                  logger)))
+    if not len(results):
+        logger.info("Regular expression %s did not match any entries in the index file %s" %
+                            (regex_str, index_file_name))
+    return results
+
+#_________________________________________________________________________________________
+#
+#    get_indexed_gene_types
+#_________________________________________________________________________________________
+def get_indexed_gene_types_matching_identifier(index_file_name, logger, regex_str):
+    """
+    Get gene structures contained in a GTF file whose identifier matches regex_str
+    Because more than one species may match, returns a list of file names / genes
+
+    :param index_file_name: path to index file created by ``index_gtf_files(...)``
+    :type index_file_name: string
+    :param regex_str: regular expression used to match identifiers parsed from the GTF file name by ``index_gtf_files(...)``
+    :type regex_str: string
+    :rtype list of tuples of (<matching identifier>, <original GTF path>, <dictionary of lists of genes>)
+    """
+    index_data = _read_index_file(index_file_name)
+    regex = re.compile(regex_str)
+
+    results = []
+    #
+    #   fields = <identifier><original_path><cache_path>
+    #
+    for id, original_gtf_path, gtf_cache_path in index_data:
+        m = regex.search(id)
+        if not m:
+            continue
+        gene_structures = gene.t_parse_gtf(id)
+        logger.info("Get indexed genes for %s from %s" %
+                            (id, original_gtf_path))
+        results.append((id, original_gtf_path,
+                        gene_structures.get_gene_types(original_gtf_path, gtf_cache_path,
                                                   logger)))
     if not len(results):
         logger.info("Regular expression %s did not match any entries in the index file %s" %
@@ -332,6 +397,45 @@ def get_indexed_genes_matching_gtf_file_name(index_file_name, logger, regex_str)
         logger.info("Regular expression %s did not match any entries in the index file %s" %
                             (regex_str, index_file_name))
     return results
+
+
+#_________________________________________________________________________________________
+#
+#    get_indexed_gene_types_matching_gtf_file_name
+#_________________________________________________________________________________________
+def get_indexed_gene_types_matching_gtf_file_name(index_file_name, logger, regex_str):
+    """
+    Get gene structures contained in a GTF file whose file name matches regex_str
+    Because more than one species may match, returns a list of file names / gene_types
+
+    :param index_file_name: path to index file created by ``index_gtf_files(...)``
+    :type index_file_name: string
+    :param regex_str: regular expression used to match GTF file name by ``index_gtf_files(...)``
+    :type regex_str: string
+    :rtype list of tuples of (<matching identifier>, <original GTF path>, <dictionary of lists of genes>)
+    """
+    index_data = _read_index_file(index_file_name)
+    regex = re.compile(regex_str)
+
+    results = []
+    #
+    #   fields = <identifier><original_path><cache_path>
+    #
+    for id, original_gtf_path, gtf_cache_path in index_data:
+        m = regex.search(original_gtf_path)
+        if not m:
+            continue
+        gene_structures = gene.t_parse_gtf(id)
+        logger.info("Get indexed gene_types for %s from %s" %
+                            (id, original_gtf_path))
+        results.append((id, original_gtf_path,
+                        gene_structures.get_gene_types(original_gtf_path, gtf_cache_path,
+                                                  logger)))
+    if not len(results):
+        logger.info("Regular expression %s did not match any entries in the index file %s" %
+                            (regex_str, index_file_name))
+    return results
+
 #_________________________________________________________________________________________
 #
 #   _read_index_file

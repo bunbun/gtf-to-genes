@@ -20,6 +20,7 @@
 import os,sys,time
 
 from collections import namedtuple
+from bisect import bisect_left
 
 #
 #   only used in complemented
@@ -29,10 +30,15 @@ t_interval = namedtuple("t_interval", "beg end")
 
 def make_interval(begin, end, curr_interval, istuple, data_type):
     if istuple:
-        return (begin, end) + curr_interval[2:]
+        return (begin, end) + tuple(curr_interval[2:])
     else:
         return data_type(*(begin, end) + curr_interval[2:])
 
+try:
+    from itertools import izip
+except ImportError:
+    # Python 3
+    izip = zip
 
 #----------------------------------------------------------------
 class t_intervals (object):
@@ -40,11 +46,15 @@ class t_intervals (object):
         if not isinstance(item, tuple):
             raise Exception("%s is not a tuple" % str(item))
         self.data.append(item)
-    def __init__ (self, interval_list=None):
-        if interval_list is None:
-            self.data = list()
-        else:
+    def __init__ (self, interval_list=None, column_list = None):
+        if interval_list is not None:
             self.data = interval_list
+        elif column_list is not None:
+            self.data = list(izip(column_list))
+        else:
+            self.data =  []
+
+
 
     def __repr__ (self):
         return repr(self.data)
@@ -106,7 +116,7 @@ class t_intervals (object):
             results when three successive intervals overlap...
 
         """
-        if not self.data or not len(self.data):
+        if self.data is None or not len(self.data):
             return self
 
         new_data = []
@@ -120,7 +130,7 @@ class t_intervals (object):
 
         # to recreate datatype
         data_type = type(self.data[0])
-        istuple = isinstance(self.data[0], tuple)
+        istuple = isinstance(self.data[0], (list,tuple))
 
         for curr in self.data[1:]:
 
@@ -131,7 +141,7 @@ class t_intervals (object):
                     #print >>sys.stderr, "Drop curr %s < minimum (%d)" % (curr, minimum)
                     continue
                 #print >>sys.stderr, "Adjust curr %s to minimum (%d)" % (curr, minimum)
-                curr = make_interval(minimum, curr[1], curr[2:], istuple, data_type)
+                curr = make_interval(minimum, curr[1], curr, istuple, data_type)
 
 
             # prev is larger, drop curr
@@ -185,7 +195,7 @@ class t_intervals (object):
 
         # to recreate datatype
         data_type = type(self.data[0])
-        istuple = isinstance(self.data[0], tuple)
+        istuple = isinstance(self.data[0], (list,tuple))
 
         prev_max = self.data[0]
 
@@ -260,7 +270,7 @@ class t_intervals (object):
         self.data.sort()
 
         data_type = type(self.data[0])
-        istuple = isinstance(self.data[0], tuple)
+        istuple = isinstance(self.data[0], (list,tuple))
 
         curr_beg, curr_end = self.data[0][0:2]
         extras = self.data[0]
@@ -399,7 +409,7 @@ class t_intervals (object):
 
         new_data = []
         data_type = type(self.data[0])
-        istuple = isinstance(self.data[0], tuple)
+        istuple = isinstance(self.data[0], (list,tuple))
 
         for d in self.data:
             new_beg, new_end = d[0:2]
@@ -447,7 +457,7 @@ class t_intervals (object):
         current_to_remove = 0
 
         data_type = type(self.data[0])
-        istuple = isinstance(self.data[0], tuple)
+        istuple = isinstance(self.data[0], (list,tuple))
         for d in self.data:
             this_beg, this_end = d[0:2]
 
@@ -583,7 +593,7 @@ class t_intervals (object):
             return t_intervals([])
 
         data_type = type(self.data[0])
-        istuple = isinstance(self.data[0], tuple)
+        istuple = isinstance(self.data[0], (list,tuple))
 
 
         self.data.sort()
@@ -619,6 +629,61 @@ class t_intervals (object):
 
     def intersect( self, other ):
         new_data = self.intersected_with(other)
+        self.data = new_data.data
+        return self
+
+    #----------------------------------------------------------------
+    #----------------------------------------------------------------
+    def touched_by( self, other ):
+        """
+        intersect
+
+            assumes combined
+
+            returns overlap
+
+        """
+
+        if not self.data or not other.data:
+            return t_intervals([])
+
+        data_type = type(self.data[0])
+        istuple = isinstance(self.data[0], (list,tuple))
+
+
+        self.data.sort()
+        other.data.sort()
+
+        overlap = 0
+        x = 0
+        y = 0
+
+        new_data = []
+        while x < len(self.data) and y < len(other.data):
+
+            xbeg, xend = self .data[x][0:2]
+            ybeg, yend = other.data[y][0:2]
+
+            if xend - 1 < ybeg:
+                x += 1
+            elif yend - 1 < xbeg:
+                y += 1
+            else:
+                # remember to add self. extra fields
+                new_data.append(make_interval(xbeg, xend, self.data[x], istuple, data_type))
+
+                if xend < yend:
+                    x += 1
+                elif yend < xend:
+                    y += 1
+                else:
+                    x += 1
+                    y += 1
+
+        return t_intervals(new_data)
+
+    def touch( self, other ):
+        new_data = self.touched_by(other)
         self.data = new_data.data
         return self
 
@@ -680,4 +745,97 @@ class t_intervals (object):
             return d
 
         return (None, None)
+
+    #----------------------------------------------------------------
+    def nearest_before( self, test_interval):
+        """
+        nearest_before
+
+            returns interval, and distance to test_pt
+            for containing, upstream and downstream
+
+        """
+        #print test_pt
+        if not self.data:
+            return (None, None, None)
+        self.data.sort()
+
+        begins = [dd[0] for dd in self.data]
+        beg_pos  = bisect_left(begins, test_interval[0])
+
+        if beg_pos == 0:
+            return (None, None, None)
+
+        before_interval = self.data[beg_pos - 1]
+        return before_interval, test_interval[0] - before_interval[1] , beg_pos - 1
+
+
+    def nearest_after( self, test_interval):
+        """
+        nearest_after
+
+            returns interval, and distance to test_pt
+            for containing, upstream and downstream
+
+        """
+        #print test_pt
+        if not self.data:
+            return (None, None, None)
+        self.data.sort()
+
+        ends = [dd[1] for dd in self.data]
+        end_pos  = bisect_left(ends, test_interval[1])
+        if ends[end_pos] == test_interval[1]:
+            end_pos = end_pos + 1
+
+
+        if end_pos == len(self.data):
+            return (None, None, None)
+
+        after_interval = self.data[end_pos]
+        return after_interval, after_interval[0] - test_interval[1], end_pos
+
+
+
+
+    #----------------------------------------------------------------
+    #def nearest_neighbours( self, test_interval):
+    #    """
+    #    nearest_before
+    #
+    #        returns interval, and distance to test_pt
+    #        for containing, upstream and downstream
+    #
+    #    """
+    #
+    #    def within_interval(test_pt, interval_index)
+    #        if (self.data[interval_index][0] <= test_pt and
+    #            self.data[interval_index][0] >  test_pt)
+    #            return True
+    #        return False
+    #
+    #
+    #    #print test_pt
+    #    if not self.data:
+    #        return (None, None)
+    #
+    #    self.data.sort()
+    #
+    #    begins = [dd[0] for dd in self.data]
+    #    ends   = [dd[1] for dd in self.data]
+    #    mids   = [int((dd[1] - dd[0]) * 0.5 + 0.5) for dd in self.data]
+    #
+    #
+    #    beg_pos  = bisect_left(begins, test_interval[0])
+    #    end_pos  = bisect_left(ends,   test_interval[1], lo = beg_pos)
+    #    mid_pt   = int((test_interval[1] - test_interval[0]) * 0.5 + 0.5)
+    #
+    #    # find closest to mid point
+    #    if beg_pos != end_pos:
+    #        closest_intervals = []
+    #        ii = beg_pos
+    #        while ii != end_pos:
+    #            closest_interval.append(abs(int((self.data[ii][1] - self.data[ii][0]) * 0.5 + 0.5) - mid_pt), ii)
+    #            ii = ii + 1
+
 

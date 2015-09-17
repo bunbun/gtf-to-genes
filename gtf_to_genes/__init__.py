@@ -30,6 +30,9 @@ from index_gtf_files import (
             get_indexed_genes_for_identifier,
             get_indexed_genes_matching_gtf_file_name,
             get_indexed_genes_matching_identifier,
+            get_indexed_gene_types_for_identifier,
+            get_indexed_gene_types_matching_gtf_file_name,
+            get_indexed_gene_types_matching_identifier,
             list_indexed_species)
 from gene_utilities import index_genes_by_gene_id, index_transcripts
 import gtf_to_genes_version

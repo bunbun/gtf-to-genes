@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-from gtf_to_genes import get_indexed_genes_for_identifier, __version__, list_indexed_species
+from gtf_to_genes import get_indexed_genes_for_identifier, __version__, list_indexed_species, get_indexed_gene_types_for_identifier
 from intervals import t_intervals, t_interval
 from collections import defaultdict
 
@@ -118,6 +118,8 @@ ________________________________________________________________________
                       help="Gene spans.\n(default= 'OUTPUT/genes.loci')")
     output_files.add_argument("-C", "--coding_exons", metavar="PATH", nargs='?', const = "DEFAULT",
                       help="(default= 'OUTPUT/coding_exons.loci')")
+    output_files.add_argument("-U", "--utr_exons", metavar="PATH", nargs='?', const = "DEFAULT",
+                    help="(default= 'OUTPUT/utr_exons.loci')")
     output_files.add_argument("-E", "--exons", metavar="PATH", nargs='?', const = "DEFAULT",
                       help="Exons incl. UTR. (default= 'OUTPUT/exons.loci')")
     output_files.add_argument("-I", "--introns", metavar="PATH", nargs='?', const = "DEFAULT",
@@ -125,6 +127,9 @@ ________________________________________________________________________
     output_files.add_argument("--coding_segments", metavar="PATH", nargs='?', const = "DEFAULT",
                       help="Coding regions with overlaps combined per gene.\n"
                            "(default= 'OUTPUT/coding_segments.loci')")
+    output_files.add_argument("--utr_segments", metavar="PATH", nargs='?', const = "DEFAULT",
+                      help="Coding regions with overlaps combined per gene.\n"
+                           "(default= 'OUTPUT/utr_segments.loci')")
     output_files.add_argument("--exonic_segments", metavar="PATH", nargs='?', const = "DEFAULT",
                       help="Exonic regions with overlaps combined per gene.\n"
                            "(default= 'OUTPUT/exonic_segments.loci')")
@@ -152,13 +157,13 @@ ________________________________________________________________________
     advanced_options.add_argument("--exon_identifier",
                                   metavar= "FORMAT",
                                     default = "{gene_id}:{exon_id}:{chromosome}:{beg}-{end}:{strand}:{length}:{type}:{gene_type}",
-                                  help = "Last column for --exons, --coding_exons\n"
+                                  help = "Last column for --exons, --coding_exons --utr_exons\n"
                                          "Default= '{gene_id}:{exon_id}:{chromosome}:\n"
                                          "          {beg}-{end}:{strand}:{length}:{type}:{gene_type}'")
     advanced_options.add_argument("--segment_identifier",
                                   metavar= "FORMAT",
                                   default = "{gene_id}:{chromosome}:{beg}-{end}:{strand}:{length}:{type}:{gene_type}",
-                                  help = "Last column for --coding_segments, --exonic_segments, --introns\n"
+                                  help = "Last column for --coding_segments, --utr_segments, --exonic_segments, --introns\n"
                                          "Default= '{gene_id}:{chromosome}:{beg}-{end}:\n"
                                          "          {strand}:{length}:{type}:{gene_type}'.")
     advanced_options.add_argument("--gene_identifier",
@@ -187,8 +192,12 @@ ________________________________________________________________________
         options.log_file            = os.path.join("intervals_from_gtf.log")
     if options.coding_exons == "DEFAULT":
         options.coding_exons = os.path.join(options.output, "coding_exons.loci")
+    if options.utr_exons == "DEFAULT":
+        options.utr_exons = os.path.join(options.output, "utr_exons.loci")
     if options.coding_segments == "DEFAULT":
         options.coding_segments = os.path.join(options.output, "coding_segments.loci")
+    if options.utr_segments == "DEFAULT":
+        options.utr_segments = os.path.join(options.output, "utr_segments.loci")
     if options.exonic_segments == "DEFAULT":
         options.exonic_segments = os.path.join(options.output, "exonic_segments.loci")
     if options.genes == "DEFAULT":
@@ -417,6 +426,16 @@ if __name__ == '__main__':
             print species
         sys.exit()
 
+    if options.print_gene_types:
+        species, gtf_file_name, gene_types = get_indexed_gene_types_for_identifier(options.index,
+                                                           logger,
+                                                           options.species)
+        logger.info("Valid gene types in %s / %s:" % (species, gtf_file_name))
+        sys.stdout.write("Valid gene types in %s (%s):\n" % (species, os.path.split(gtf_file_name)[1]))
+        for gene_type in sorted(gene_types):
+            sys.stdout.write("    %s\n" % gene_type)
+            logger.info("    %s\n" % gene_type)
+        sys.exit()
 
     #
     #   get genes previously parsed by index_gtf_files.py
@@ -431,13 +450,6 @@ if __name__ == '__main__':
     if not "protein_coding" in genes:
         raise Exception("No protein coding genes for %s" % (options.species,))
 
-    if options.print_gene_types:
-        logger.info("Valid gene types:")
-        sys.stdout.write("Valid gene types:\n")
-        for gene_type in sorted(genes.keys()):
-            sys.stdout.write("    %s\n" % gene_type)
-            logger.info("    %s\n" % gene_type)
-        sys.exit()
 
     open_file_names = set()
 
@@ -456,7 +468,9 @@ if __name__ == '__main__':
 
     open_files = dict()
     coding_exons_file           = open_file(options.coding_exons         , open_files)
+    utr_exons_file              = open_file(options.utr_exons         , open_files)
     coding_segments_file        = open_file(options.coding_segments      , open_files)
+    utr_segments_file           = open_file(options.utr_segments      , open_files)
     exonic_segments_file        = open_file(options.exonic_segments      , open_files)
     genes_file                  = open_file(options.genes                , open_files)
     exons_file                  = open_file(options.exons                , open_files)
@@ -470,6 +484,8 @@ if __name__ == '__main__':
         logger.log(MESSAGE, "Using gene structures from %s..." % (gtf_file_name,))
         for option, name in ( (options.coding_exons    , "coding exons"),
                               (options.coding_segments , "combined coding segments"),
+                              (options.utr_exons       , "utr exons"),
+                              (options.utr_segments    , "combined utr segments"),
                               (options.exonic_segments , "combined exonic segments"),
                               (options.genes           , "genes"),
                               (options.exons           , "exons incl. UTR"),
@@ -514,6 +530,7 @@ if __name__ == '__main__':
         if not gene_type in genes:
             logger.log(MESSAGE, "Warning: Gene type '%s' was not found in the GTF file "
                                 "and will be ignored..." % (gene_type,))
+        logger.debug("%d genes with gene type %s" % (len(genes[gene_type]), gene_type))
         for gene in genes[gene_type]:
             # gene spans
             if genes_file:
@@ -527,11 +544,14 @@ if __name__ == '__main__':
             # CHROM BEG END GENE_ID:EXON_ID:CHROM:BEG:END:LENGTH
             write_exons(exons_file, gene, gene.get_exons(), exon_identifier_format, "exon")
             write_exons(coding_exons_file, gene, gene.get_coding_exons(), exon_identifier_format, "coding_exon")
+            write_exons(utr_exons_file, gene, gene.get_utr_exons(), exon_identifier_format, "utr_exon")
 
             # (combined) coding exonic / intronic regions per gene
             # CHROM BEG END GENE_ID:CHROM:BEG:END:LENGTH
             write_virtual_exons(coding_segments_file, gene, gene.get_virtual_coding_exons(),
                                 segment_identifier_format, "CDS")
+            write_virtual_exons(utr_segments_file, gene, gene.get_virtual_utr_exons(),
+                                segment_identifier_format, "UTR")
             write_virtual_exons(exonic_segments_file, gene, gene.get_virtual_exons(),
                                 segment_identifier_format, "exonic")
             write_virtual_exons(introns_file, gene, gene.get_virtual_introns(),
@@ -571,7 +591,6 @@ if __name__ == '__main__':
 
 
 
-
     if gene_territories_file or intergenic_file:
         for contig in genic_intervals_per_contig:
 
@@ -588,17 +607,14 @@ if __name__ == '__main__':
             if intergenic_file:
                 intergenic_regions = genic_intervals_per_contig[contig].complemented(contig_beg, contig_end).combine_overlapping().remove_empty()
                 for beg, end in intergenic_regions.data:
-                    file_handle.write(segment_identifier.format(chromosome=contig,
-                                                                   beg = beg + zero_based_coord,
-                                                                   end = end,
-                                                                   length = end - beg,
-                                                                   gene_id = "",
-                                                                   gene_type = "",
-                                                                   strand  = "+",
-                                                                   type="intergenic"))
-
-
-                    intergenic_file.write("{contig}\t{beg}\t{end}\t\n".format(beg = beg, end = end, contig=contig))
+                    intergenic_file.write(segment_identifier_format.format(chromosome=contig,
+                                                                           beg = beg + zero_based_coord,
+                                                                           end = end,
+                                                                           length = end - beg,
+                                                                           gene_id = "",
+                                                                           gene_type = "",
+                                                                           strand  = "+",
+                                                                           type="intergenic"))
 
             # gene territories
             if gene_territories_file:
