@@ -1,7 +1,0 @@
-doc/build/*
-build
-dist
-syntax: glob
-**.pyc
-gtf_to_genes.egg-info
-MANIFEST
