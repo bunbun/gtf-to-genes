@@ -530,7 +530,7 @@ if __name__ == '__main__':
         if not gene_type in genes:
             logger.log(MESSAGE, "Warning: Gene type '%s' was not found in the GTF file "
                                 "and will be ignored..." % (gene_type,))
-        logger.debug("%d genes with gene type %s" % (len(genes[gene_type]), gene_type))
+        logger.debug("{:6,d} genes with gene type {}".format(len(genes[gene_type]), gene_type))
         for gene in genes[gene_type]:
             # gene spans
             if genes_file:
